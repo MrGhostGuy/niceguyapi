@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: niceguyapi
+    env: node
+    plan: free
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NICEGUYAPI_PORT
+        value: "3000"
+      - key: NICEGUYAPI_SECRET
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
