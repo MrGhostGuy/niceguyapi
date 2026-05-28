@@ -163,9 +163,9 @@
     <div class="signup-row">
       <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
       <select id="plan">
-        <option value="free">Free — 50 req/mo</option>
-        <option value="pro">Pro — 5,000 req/mo — $6</option>
-        <option value="premium">Premium — 25,000 req/mo — $27</option>
+        <option value="free">Free — 14 req/mo</option>
+        <option value="pro">Pro — 40 req/mo — $6</option>
+        <option value="premium">Premium — 250 req/mo — $27</option>
       </select>
       <button class="btn btn-primary" id="signup-btn" onclick="handleSignup()">Get API Key →</button>
     </div>
@@ -192,7 +192,7 @@
   <!-- ════════ FEATURES ════════ -->
   <div class="section" id="features">
     <h2>What You Get</h2>
-    <p class="section-sub">Everything you need to build with AI. No fake features.</p>
+    <p class="section-sub">Real features for every tier. No fake stuff.</p>
     <div class="features-grid">
       <div class="feature-card"><div class="icon">💬</div><h3>AI Chat</h3><p>17+ models including DeepSeek, Llama, Qwen, GPT, Claude, Gemini. OpenAI-compatible.</p></div>
       <div class="feature-card"><div class="icon">🔑</div><h3>Simple Auth</h3><p>One API key. X-API-Key header. Works with any HTTP client or SDK.</p></div>
@@ -200,6 +200,9 @@
       <div class="feature-card"><div class="icon">🔄</div><h3>Key Rotation</h3><p>Compromised key? Rotate it instantly. Old key stops working immediately.</p></div>
       <div class="feature-card"><div class="icon">💳</div><h3>Easy Payments</h3><p>Pay with card via Stripe. Pay-as-you-go refills if you hit your limit.</p></div>
       <div class="feature-card"><div class="icon">🛡️</div><h3>Rate Limiting</h3><p>Tier-based limits: 5/min free, 20/min Pro, 60/min Premium.</p></div>
+      <div class="feature-card"><div class="icon">🎨</div><h3>Image Generation</h3><p>Create custom images with AI. Available on Pro and Premium tiers.</p></div>
+      <div class="feature-card"><div class="icon">🎵</div><h3>Music Generation</h3><p>Generate custom songs and music with AI. Available on Pro and Premium tiers.</p></div>
+      <div class="feature-card"><div class="icon">🌐</div><h3>Website + Game + App Builder</h3><p>Premium only: Create custom websites, games, and apps with AI. Includes hosting.</p></div>
     </div>
   </div>
 
@@ -213,7 +216,7 @@
         <div class="price">$0<span>/mo</span></div>
         <div class="tagline">Try it out — no card needed</div>
         <ul>
-          <li>50 AI requests/month</li>
+          <li>14 AI requests/month</li>
           <li>5 free models</li>
           <li>4K max tokens</li>
           <li>5 requests/min</li>
@@ -227,10 +230,12 @@
         <div class="discount-badge">🔥 50% OFF — LAUNCH SALE</div>
         <div class="tagline">Best for developers</div>
         <ul>
-          <li>5,000 AI requests/month</li>
+          <li>40 AI requests/month</li>
           <li>All 17+ free models</li>
           <li>32K max tokens</li>
           <li>20 requests/min</li>
+          <li>Custom image generation</li>
+          <li>Custom song generation</li>
           <li>Priority support</li>
         </ul>
         <a href="#signup" class="btn btn-primary" style="width:100%">Subscribe — $6/mo</a>
@@ -241,11 +246,14 @@
         <div class="discount-badge">🔥 45% OFF — LAUNCH SALE</div>
         <div class="tagline">Full power unlocked</div>
         <ul>
-          <li>25,000 AI requests/month</li>
+          <li>250 AI requests/month</li>
           <li>All models including premium</li>
           <li>128K max tokens</li>
           <li>60 requests/min</li>
           <li>Claude, GPT-4o, Gemini</li>
+          <li>Custom website creation + hosting</li>
+          <li>Custom game creation + hosting</li>
+          <li>Custom app creation + hosting</li>
         </ul>
         <a href="#signup" class="btn btn-primary" style="width:100%">Subscribe — $27/mo</a>
       </div>
@@ -306,7 +314,7 @@
 
       <div class="faq-item">
         <div class="faq-q" onclick="toggleFaq(this)">What happens when I run out of requests? <span class="arrow">▼</span></div>
-        <div class="faq-a">You'll get a 429 error on your next API call. You can either upgrade to a higher plan or buy pay-as-you-go refills. Free users get 50 requests/month, Pro gets 5,000, and Premium gets 25,000.</div>
+        <div class="faq-a">You'll get a 429 error on your next API call. You can either upgrade to a higher plan or buy pay-as-you-go refills. Free users get 14 requests/month, Pro gets 40, and Premium gets 250.</div>
       </div>
 
       <div class="faq-item">
@@ -326,7 +334,7 @@
 
       <div class="faq-item">
         <div class="faq-q" onclick="toggleFaq(this)">Is the free tier really free? <span class="arrow">▼</span></div>
-        <div class="faq-a">Yes. 50 requests per month, forever. No credit card required. No catch. We offer it because we think you'll love the service and want to upgrade.</div>
+        <div class="faq-a">Yes. 14 requests per month, forever. No credit card required. No catch. We offer it because we think you'll love the service and want to upgrade.</div>
       </div>
 
       <div class="faq-item">
@@ -344,7 +352,7 @@
 
   <!-- ════════ FOOTER ════════ -->
   <footer>
-    <p>NiceGuyAPI v3.0 — Built by <a href="https://github.com/MrGhostGuy" target="_blank">MrGhostGuy</a></p>
+    <p>NiceGuyAPI v3.5 — Built by <a href="https://github.com/MrGhostGuy" target="_blank">MrGhostGuy</a></p>
     <p style="margin-top:6px;">© 2026 GhostLegacyX. All rights reserved.</p>
     <p style="margin-top:6px;font-size:11px;">Payments processed by Stripe. Your card data never touches our servers.</p>
   </footer>

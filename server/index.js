@@ -1,5 +1,5 @@
 /**
- * NiceGuyAPI v3 — Premium AI Model Gateway
+ * NiceGuyAPI v3.5 — Premium AI Model Gateway
  *
  * One API endpoint for Claude, GPT, Gemini, and 17+ more.
  * OpenAI-compatible /v1/chat/completions interface.
@@ -40,32 +40,38 @@ const TIERS = {
   free: {
     name: 'Free',
     price: 0,
-    monthly_requests: 50,
+    monthly_requests: 14,
     rate_limit_per_minute: 5,
     rate_limit_per_day: 10,
     max_tokens_per_request: 4096,
     allows_games_apps: false,
+    allows_image_gen: false,
+    allows_song_gen: false,
     cost_per_extra_request: 0.05,
     period: 'monthly',
   },
   pro: {
     name: 'Pro',
     price: 6,
-    monthly_requests: 5000,
+    monthly_requests: 40,
     rate_limit_per_minute: 20,
     rate_limit_per_day: 200,
     max_tokens_per_request: 32768,
-    allows_games_apps: true,
+    allows_games_apps: false,
+    allows_image_gen: true,
+    allows_song_gen: true,
     cost_per_extra_request: 0.02,
   },
   premium: {
     name: 'Premium',
     price: 27,
-    monthly_requests: 25000,
+    monthly_requests: 250,
     rate_limit_per_minute: 60,
     rate_limit_per_day: 1000,
     max_tokens_per_request: 131072,
     allows_games_apps: true,
+    allows_image_gen: true,
+    allows_song_gen: true,
     cost_per_extra_request: 0.01,
   },
 };
@@ -323,24 +329,28 @@ app.post('/v1/stripe/webhook', express.raw({ type: 'application/json' }), (req, 
     if (billingSession && billingSession.status === 'pending') {
       const keyRecord = db.prepare('SELECT * FROM api_keys WHERE id = ?').get(billingSession.api_key_id);
 
-      if (keyRecord && keyRecord.pending_tier) {
-        const newTier = keyRecord.pending_tier;
-        const tierConfig = TIERS[newTier];
-
-        // Upgrade the key
-        db.prepare('UPDATE api_keys SET tier = ?, pending_tier = NULL, monthly_limit = ? WHERE id = ?')
-          .run(newTier, tierConfig.monthly_requests, keyRecord.id);
+      if (keyRecord) {
+        // Check if this is a refill or a tier upgrade
+        if (session.metadata && session.metadata.type === 'refill') {
+          // Refill: add requests to existing tier
+          const refillAmount = parseInt(session.metadata.amount || '10', 10);
+          db.prepare('UPDATE api_keys SET monthly_limit = monthly_limit + ? WHERE id = ?')
+            .run(refillAmount, keyRecord.id);
+          console.log(`[NiceGuyAPI] Refilled ${keyRecord.email} with ${refillAmount} requests`);
+        } else if (keyRecord.pending_tier) {
+          // Tier upgrade
+          const newTier = keyRecord.pending_tier;
+          const tierConfig = TIERS[newTier];
+          db.prepare('UPDATE api_keys SET tier = ?, pending_tier = NULL, monthly_limit = ? WHERE id = ?')
+            .run(newTier, tierConfig.monthly_requests, keyRecord.id);
+          console.log(`[NiceGuyAPI] Upgraded ${keyRecord.email} to ${newTier} via Stripe`);
+        }
 
         // Mark billing session completed
         db.prepare('UPDATE billing_sessions SET status = ?, completed_at = datetime("now") WHERE id = ?')
           .run('completed', billingSession.id);
-
-        console.log(`[NiceGuyAPI] Upgraded ${keyRecord.email} to ${newTier} via Stripe`);
       } else {
-        // No pending tier — maybe already upgraded. Still mark session completed.
-        db.prepare('UPDATE billing_sessions SET status = ?, completed_at = datetime("now") WHERE id = ?')
-          .run('completed', billingSession.id);
-        console.log('[NiceGuyAPI] Billing session completed but no pending tier for key:', billingSession.api_key_id);
+        console.log('[NiceGuyAPI] No key found for billing session:', billingSession.id);
       }
     } else {
       console.log('[NiceGuyAPI] No pending billing session found for stripe session:', session.id);
@@ -520,8 +530,8 @@ app.post('/v1/signup', signupLimiter, async (req, res) => {
             },
             quantity: 1,
           }],
-          success_url: 'https://mrghostguy.github.io/stax-agent/#success',
-          cancel_url: 'https://mrghostguy.github.io/stax-agent/#pricing',
+          success_url: 'https://mrghostguy.github.io/niceguyapi/#success',
+          cancel_url: 'https://mrghostguy.github.io/niceguyapi/#pricing',
           customer_email: email,
           metadata: {
             api_key_id: id,
@@ -593,9 +603,11 @@ app.get('/v1/usage', authenticate, (req, res) => {
     period_resets: isMonthly ? 'Every month' : 'Every week',
     features: {
       games_apps: req._tierConfig.allows_games_apps,
+      image_generation: req._tierConfig.allows_image_gen,
+      song_generation: req._tierConfig.allows_song_gen,
     },
     refill_price_per_request: req._tierConfig.cost_per_extra_request,
-    upgrade_url: 'https://mrghostguy.github.io/stax-agent/',
+    upgrade_url: 'https://mrghostguy.github.io/niceguyapi/',
   });
 });
 
@@ -615,7 +627,7 @@ app.post('/v1/chat/completions', authenticate, async (req, res) => {
       error: {
         message: `Not enough requests remaining. You have ${remaining} left. Upgrade or buy refills.`,
         type: 'limit_reached',
-        upgrade_url: 'https://mrghostguy.github.io/stax-agent/',
+        upgrade_url: 'https://mrghostguy.github.io/niceguyapi/',
         refill_price: req._tierConfig.cost_per_extra_request,
       }
     });
@@ -739,55 +751,130 @@ app.post('/v1/keys/rotate', authenticate, (req, res) => {
 
 // ── Refill ─────────────────────────────────────────────────────────────────
 
-app.post('/v1/billing/refill', authenticate, (req, res) => {
-  const { amount = 10, paypal_order_id } = req.body;
+app.post('/v1/billing/refill', authenticate, async (req, res) => {
+  const { amount = 10 } = req.body;
   const cost = amount * req._tierConfig.cost_per_extra_request;
 
-  if (!paypal_order_id) {
-    return res.status(400).json({
-      error: {
-        message: 'paypal_order_id is required. Complete PayPal purchase first.',
-        type: 'validation_error',
-        paypal_url: `https://paypal.me/kencyrus3/${Math.ceil(cost)}`,
-      }
-    });
+  if (!amount || amount < 1) {
+    return res.status(400).json({ error: { message: 'amount must be at least 1', type: 'validation_error' } });
   }
 
-  if (!paypal_order_id.startsWith('PAY-') && !paypal_order_id.startsWith('PAYID-')) {
-    return res.status(400).json({ error: { message: 'Invalid paypal_order_id format.', type: 'validation_error' } });
+  // Create Stripe Checkout Session for refill if Stripe is configured
+  if (stripe) {
+    try {
+      const refillTierConfig = TIERS[req._tier];
+      const session = await stripe.checkout.sessions.create({
+        mode: 'payment',
+        line_items: [{
+          price_data: {
+            currency: 'usd',
+            product_data: {
+              name: `NiceGuyAPI Refill — ${amount} Requests`,
+              description: `${amount} additional requests for ${refillTierConfig.name} tier. $${cost.toFixed(2)}.`,
+            },
+            unit_amount: Math.round(cost * 100),
+          },
+          quantity: 1,
+        }],
+        success_url: 'https://mrghostguy.github.io/niceguyapi/#success',
+        cancel_url: 'https://mrghostguy.github.io/niceguyapi/',
+        customer_email: req.apiKey.email,
+        metadata: {
+          api_key_id: req.apiKey.id,
+          type: 'refill',
+          amount: String(amount),
+        },
+      });
+
+      const sessionId = uuidv4();
+      db.prepare('INSERT INTO billing_sessions (id, api_key_id, email, tier, price, status, stripe_session_id) VALUES (?, ?, ?, ?, ?, ?, ?)')
+        .run(sessionId, req.apiKey.id, req.apiKey.email, req._tier, cost, 'pending', session.id);
+
+      return res.json({
+        payment_required: true,
+        payment: {
+          stripe_url: session.url,
+          amount: cost,
+          requests: amount,
+        },
+        message: `Complete payment to add ${amount} requests for $${cost.toFixed(2)}.`,
+      });
+    } catch (stripeErr) {
+      console.error('[NiceGuyAPI] Stripe refill error:', stripeErr.message);
+      return res.status(500).json({ error: { message: 'Payment processing failed. Try again.', type: 'server_error' } });
+    }
   }
 
+  // No Stripe configured — add requests directly (dev mode)
   db.prepare('UPDATE api_keys SET monthly_limit = monthly_limit + ? WHERE id = ?').run(amount, req.apiKey.id);
 
   const sessionId = uuidv4();
-  db.prepare('INSERT INTO billing_sessions (id, api_key_id, email, tier, price, status, paypal_order_id, completed_at) VALUES (?, ?, ?, ?, ?, ?, ?, datetime("now"))')
-    .run(sessionId, req.apiKey.id, req.apiKey.email, req.apiKey.tier, cost, 'completed', paypal_order_id);
+  db.prepare('INSERT INTO billing_sessions (id, api_key_id, email, tier, price, status, completed_at) VALUES (?, ?, ?, ?, ?, ?, datetime("now"))')
+    .run(sessionId, req.apiKey.id, req.apiKey.email, req._tier, cost, 'completed');
 
   res.json({
     message: `Added ${amount} requests for $${cost.toFixed(2)}.`,
     requests_added: amount,
     cost: cost,
     new_limit: req.apiKey.monthly_limit + amount,
-    paypal_order_id,
   });
 });
 
-// ── Fake endpoints (return 501) ───────────────────────────────────────────
+// ── Feature-Gated Endpoints ──────────────────────────────────────────────
 
-app.post('/v1/media', authenticate, (req, res) => {
-  res.status(501).json({ error: { message: 'Not implemented', type: 'not_implemented' } });
+// Image generation — Pro and Premium only
+app.post('/v1/images/generate', authenticate, (req, res) => {
+  if (!req._tierConfig.allows_image_gen) {
+    return res.status(403).json({ error: { message: 'Image generation requires Pro or Premium tier.', type: 'tier_required', upgrade_url: 'https://mrghostguy.github.io/niceguyapi/' } });
+  }
+  const { prompt, size = '1024x1024' } = req.body;
+  if (!prompt) return res.status(400).json({ error: { message: 'prompt is required', type: 'validation_error' } });
+  // TODO: Route to image generation model via OpenRouter
+  res.status(501).json({ error: { message: 'Image generation coming soon.', type: 'not_implemented' } });
 });
 
-app.post('/v1/agents', authenticate, (req, res) => {
-  res.status(501).json({ error: { message: 'Not implemented', type: 'not_implemented' } });
+// Song/music generation — Pro and Premium only
+app.post('/v1/music/generate', authenticate, (req, res) => {
+  if (!req._tierConfig.allows_song_gen) {
+    return res.status(403).json({ error: { message: 'Music generation requires Pro or Premium tier.', type: 'tier_required', upgrade_url: 'https://mrghostguy.github.io/niceguyapi/' } });
+  }
+  const { prompt, duration = 30, genre } = req.body;
+  if (!prompt) return res.status(400).json({ error: { message: 'prompt is required', type: 'validation_error' } });
+  // TODO: Route to music generation model via OpenRouter
+  res.status(501).json({ error: { message: 'Music generation coming soon.', type: 'not_implemented' } });
 });
 
-app.post('/v1/tasks/schedule', authenticate, (req, res) => {
-  res.status(501).json({ error: { message: 'Not implemented', type: 'not_implemented' } });
-});
-
+// Website creation + hosting — Premium only
 app.post('/v1/websites', authenticate, (req, res) => {
-  res.status(501).json({ error: { message: 'Not implemented', type: 'not_implemented' } });
+  if (!req._tierConfig.allows_games_apps) {
+    return res.status(403).json({ error: { message: 'Website creation requires Premium tier.', type: 'tier_required', upgrade_url: 'https://mrghostguy.github.io/niceguyapi/' } });
+  }
+  const { name, description, framework } = req.body;
+  if (!name || !description) return res.status(400).json({ error: { message: 'name and description are required', type: 'validation_error' } });
+  // TODO: Generate site with AI, deploy to hosting
+  res.status(501).json({ error: { message: 'Website creation coming soon.', type: 'not_implemented' } });
+});
+
+// Game creation + hosting — Premium only
+app.post('/v1/games', authenticate, (req, res) => {
+  if (!req._tierConfig.allows_games_apps) {
+    return res.status(403).json({ error: { message: 'Game creation requires Premium tier.', type: 'tier_required', upgrade_url: 'https://mrghostguy.github.io/niceguyapi/' } });
+  }
+  const { name, description, genre, engine } = req.body;
+  if (!name || !description) return res.status(400).json({ error: { message: 'name and description are required', type: 'validation_error' } });
+  // TODO: Generate game with AI, deploy to hosting
+  res.status(501).json({ error: { message: 'Game creation coming soon.', type: 'not_implemented' } });
+});
+
+// App creation + hosting — Premium only
+app.post('/v1/apps', authenticate, (req, res) => {
+  if (!req._tierConfig.allows_games_apps) {
+    return res.status(403).json({ error: { message: 'App creation requires Premium tier.', type: 'tier_required', upgrade_url: 'https://mrghostguy.github.io/niceguyapi/' } });
+  }
+  const { name, description, platform } = req.body;
+  if (!name || !description) return res.status(400).json({ error: { message: 'name and description are required', type: 'validation_error' } });
+  // TODO: Generate app with AI, deploy to hosting
+  res.status(501).json({ error: { message: 'App creation coming soon.', type: 'not_implemented' } });
 });
 
 // ── Admin ──────────────────────────────────────────────────────────────────
@@ -818,13 +905,13 @@ app.get('/admin/stats', adminAuth, (req, res) => {
 app.get('/', (req, res) => {
   res.json({
     name: 'NiceGuyAPI',
-    version: '3.0.0',
+    version: '3.5.0',
     description: 'One API for every AI provider. OpenAI-compatible interface.',
     base_url: '/v1',
     pricing: {
-      free: '$0/mo — 50 requests',
-      pro: '$6/mo — 5,000 requests',
-      premium: '$27/mo — 25,000 requests',
+      free: '$0/mo — 14 requests',
+      pro: '$6/mo — 40 requests (includes image + song generation)',
+      premium: '$27/mo — 250 requests (includes image + song + website/game/app creation + hosting)',
       refill: 'Pay-as-you-go refills available.',
     },
     endpoints: {
@@ -889,7 +976,7 @@ initDb().then(() => {
     const bootTime = Date.now() - startTime;
     console.log(`
   ╔══════════════════════════════════════════════╗
-  ║  🏗️  NiceGuyAPI v3.0 — AI Model Gateway         ║
+  ║  🏗️  NiceGuyAPI v3.5 — AI Model Gateway         ║
   ║  Running on port ${PORT}${' '.repeat(Math.max(0, 19 - String(PORT).length))}║
   ║  Endpoint: http://localhost:${PORT}/v1${' '.repeat(Math.max(0, 8 - String(PORT).length))}║
   ║  Stripe: ${stripe ? 'ENABLED ✅' : 'DISABLED ⚠️'}${' '.repeat(Math.max(0, 29 - (stripe ? 11 : 14)))}║
