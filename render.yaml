@@ -1,10 +1,15 @@
 services:
   - type: web
     name: niceguyapi
-    runtime: docker
+    env: node
+    plan: free
     repo: https://github.com/MrGhostGuy/niceguyapi
     branch: main
-    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: node index.js
+    healthCheckPath: /health
+    autoDeploy: true
     envVars:
       - key: NICEGUYAPI_PORT
         value: "3000"
@@ -18,5 +23,3 @@ services:
         sync: false
       - key: STRIPE_WEBHOOK_SECRET
         sync: false
-    healthCheckPath: /health
-    autoDeploy: true
