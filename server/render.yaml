@@ -2,9 +2,9 @@ services:
   - type: web
     name: niceguyapi
     runtime: docker
-    repo: https://github.com/MrGhostGuy/stax-agent
-    branch: master
-    rootDir: niceguyapi/server
+    repo: https://github.com/MrGhostGuy/niceguyapi
+    branch: main
+    rootDir: server
     plan: free
     envVars:
       - key: NICEGUYAPI_PORT
