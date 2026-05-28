@@ -17,7 +17,7 @@ export OPENAI_BASE_URL="https://niceguyapi.onrender.com/v1"
 |------|-------|----------|--------|
 | Free | $0/mo | 14/mo | 5 free models |
 | Pro | $6/mo | 40/mo | All 17+ free models; image + song generation |
-| Premium | $27/mo | 250/mo | All models including Claude, GPT-4o, Gemini; game + app + website creation + hosting |
+| Premium | $27/mo | 500/mo | All models including Claude, GPT-4o, Gemini; game + app + website creation + hosting |
 
 ## API
 

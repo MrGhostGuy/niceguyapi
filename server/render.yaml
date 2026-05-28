@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: niceguyapi-1v1f
+    name: niceguyapi
     runtime: docker
     repo: https://github.com/MrGhostGuy/stax-agent
     branch: master

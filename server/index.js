@@ -28,6 +28,8 @@ const crypto = require('crypto');
 const PORT = parseInt(process.env.PORT || process.env.NICEGUYAPI_PORT || '3000', 10);
 const ADMIN_SECRET = process.env.NICEGUYAPI_SECRET || 'niceguy-dev-secret-change-me';
 
+const startTime = Date.now();
+
 let stripe = null;
 if (process.env.STRIPE_SECRET_KEY) {
   const Stripe = require('stripe');
@@ -65,7 +67,7 @@ const TIERS = {
   premium: {
     name: 'Premium',
     price: 27,
-    monthly_requests: 250,
+    monthly_requests: 500,
     rate_limit_per_minute: 60,
     rate_limit_per_day: 1000,
     max_tokens_per_request: 131072,
@@ -900,6 +902,17 @@ app.get('/admin/stats', adminAuth, (req, res) => {
   res.json({ total_keys: totalKeys, active_keys: activeKeys, total_requests: totalRequests, tier_breakdown: byTier, daily_usage: recentUsage });
 });
 
+// ── Health Check ──────────────────────────────────────────────────────────
+
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    version: '3.5.0',
+    uptime_seconds: Math.floor((Date.now() - startTime) / 1000),
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // ── Root docs ─────────────────────────────────────────────────────────────
 
 app.get('/', (req, res) => {
@@ -911,7 +924,7 @@ app.get('/', (req, res) => {
     pricing: {
       free: '$0/mo — 14 requests',
       pro: '$6/mo — 40 requests (includes image + song generation)',
-      premium: '$27/mo — 250 requests (includes image + song + website/game/app creation + hosting)',
+      premium: '$27/mo — 500 requests (includes image + song + website/game/app creation + hosting)',
       refill: 'Pay-as-you-go refills available.',
     },
     endpoints: {
@@ -969,7 +982,6 @@ process.on('unhandledRejection', (err) => {
 
 // ── Start ──────────────────────────────────────────────────────────────────
 
-const startTime = Date.now();
 initDb().then(() => {
   scheduleUsageResets();
   server = app.listen(PORT, () => {
