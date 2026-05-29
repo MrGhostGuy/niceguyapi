@@ -13,6 +13,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 const ADMIN_SECRET = process.env.NICEGUYAPI_SECRET || 'niceguy-dev-secret';
+const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || '';
 
 let stripe = null;
 if (process.env.STRIPE_SECRET_KEY) {
@@ -242,7 +243,7 @@ app.post('/v1/chat/completions', authenticate, async (req, res) => {
   const isFreeModel = requestedModel.includes(':free');
   if (!isFreeModel && req.apiKey.effective_tier === 'free')
     return apiError(res, 403, 'Premium models require Premium subscription. https://mrghostguy.github.io/niceguyapi/', 'tier_error');
-  if (!process.env.OPENROUTER_API_KEY)
+  if (!OPENROUTER_KEY)
     return apiError(res, 503, 'AI service not configured. Set OPENROUTER_API_KEY.', 'service_unavailable');
 
   const startTime = Date.now();
@@ -251,7 +252,7 @@ app.post('/v1/chat/completions', authenticate, async (req, res) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Authorization': `Bearer ${OPENROUTER_KEY}`,
         'HTTP-Referer': 'https://mrghostguy.github.io/niceguyapi/',
         'X-Title': 'NiceGuyAPI',
       },
