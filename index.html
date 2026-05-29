@@ -231,9 +231,9 @@
   <div class="tab-content active" id="content-home">
 
     <div class="hero">
-      <div class="badge badge-green">● Live &amp; Ready</div>
-      <h1>One API. Every AI Model.</h1>
-      <p>Chat with DeepSeek, Claude, GPT-4o, Gemini and 17+ more through a single endpoint. Try it free — no credit card required.</p>
+      <div class="badge badge-green">● Live &amp; Ready — Now with AI Agent</div>
+      <h1>One API. Every AI Model.<br><span style="font-size:28px;background:linear-gradient(135deg,#34d399,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">+ Autonomous Agent</span></h1>
+      <p>Chat with DeepSeek, Claude, GPT-4o, Gemini and 23+ more through a single endpoint. Agent mode searches the web, reads pages, and solves multi-step tasks. Try it free.</p>
       <div style="margin-top:12px;"><span class="badge badge-amber">🔥 Launch Sale — Up to 50% Off — Limited Time</span></div>
       <div class="hero-badges">
         <span class="model-pill free">DeepSeek</span>
@@ -255,8 +255,8 @@
         <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
         <select id="plan">
           <option value="free">Free — 14 req/mo — $0</option>
-          <option value="pro">Pro — 40 req/mo — $6/mo</option>
-          <option value="premium">Premium — 500 req/mo — $27/mo</option>
+          <option value="pro">Pro — 40 req/mo + Agent — $6/mo</option>
+          <option value="premium">Premium — 500 req/mo + Agent — $27/mo</option>
         </select>
         <button class="btn btn-primary" id="signup-btn" onclick="handleSignup()">Get Key</button>
       </div>
@@ -286,6 +286,12 @@
       <h2>Who Is This For?</h2>
       <p class="sub">Whether you are a developer, creator, or just curious — there is something here for you.</p>
       <div class="usecases-grid">
+        <div class="usecase-card">
+          <div class="icon">🤖</div>
+          <h3>AI Agent</h3>
+          <p>Autonomous agent that searches the web, reads webpages, and solves multi-step tasks. Give it a goal — it figures out the steps. Like having a research assistant that never sleeps.</p>
+          <span class="tier-tag free">✓ Pro &amp; Premium</span>
+        </div>
         <div class="usecase-card">
           <div class="icon">🧠</div>
           <h3>Chat Assistant</h3>
@@ -349,9 +355,14 @@
       <p class="sub">One key. One endpoint. Every AI model you will ever need.</p>
       <div class="features-grid">
         <div class="feature-card">
+          <div class="icon">🤖</div>
+          <h3>Built-in AI Agent</h3>
+          <p>Agent mode with web search, web fetch, and calculator tools. The AI autonomously plans and executes multi-step tasks. Pro &amp; Premium.</p>
+        </div>
+        <div class="feature-card">
           <div class="icon">🔑</div>
           <h3>One Key, All Models</h3>
-          <p>No need to sign up for 5 different services. One API key gives you access to 17+ models from DeepSeek, Claude, GPT, Gemini and more.</p>
+          <p>No need to sign up for 5 different services. One API key gives you access to 23+ models from DeepSeek, Claude, GPT, Gemini and more.</p>
         </div>
         <div class="feature-card">
           <div class="icon">🔌</div>
@@ -410,6 +421,8 @@
             <li>Rate limit: 20 req/min</li>
             <li>Image generation</li>
             <li>Song generation</li>
+            <li>🤖 Agent mode — web search &amp; fetch</li>
+            <li>Conversation memory (6 turns)</li>
             <li>32K max tokens per request</li>
           </ul>
           <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="document.getElementById('plan').value='pro';handleSignup()">Get Pro — $6/mo</button>
@@ -423,6 +436,8 @@
             <li>🔥 500 requests per month</li>
             <li>ALL models including Claude, GPT-4o, Gemini</li>
             <li>Rate limit: 60 req/min</li>
+            <li>🤖 Full Agent — search, fetch, calculate</li>
+            <li>Extended agent memory</li>
             <li>Image + song generation</li>
             <li>App, game &amp; website creation</li>
             <li>Hosting included</li>
@@ -480,6 +495,55 @@ res = requests.post(
       <p style="text-align:center;margin-top:16px;"><a href="#" onclick="showTab('guide');return false;" style="color:#818cf8;font-size:14px;">📖 Full setup guide with OpenClaw integration →</a></p>
     </div>
 
+    <!-- AGENT DEMO -->
+    <div class="section">
+      <h2>🤖 AI Agent — Do More Than Chat</h2>
+      <p class="sub">Pro &amp; Premium tiers include an autonomous agent that searches the web, reads pages, and solves multi-step tasks.</p>
+      <div class="features-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="feature-card">
+          <div class="icon">🔍</div>
+          <h3>Web Search</h3>
+          <p>Agent searches the web in real-time for current events, prices, facts, and news. No stale training data.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🌐</div>
+          <h3>Web Fetch</h3>
+          <p>Agent reads any webpage and extracts the key information. Paste a URL and get a summary instantly.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🧮</div>
+          <h3>Calculator</h3>
+          <p>Safely evaluates math expressions. No more "AI got the math wrong" — it uses a real calculator.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">🧠</div>
+          <h3>Multi-Step Reasoning</h3>
+          <p>Agent chains multiple tool calls together. Search → fetch → analyze → summarize, all in one request.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">💾</div>
+          <h3>Conversation Memory</h3>
+          <p>Agent remembers your last 6 exchanges. Ask follow-ups naturally without repeating context.</p>
+        </div>
+        <div class="feature-card">
+          <div class="icon">⚡</div>
+          <h3>One API Call</h3>
+          <p>All agent complexity is hidden behind one simple API request. Just add "agent": true to your chat call.</p>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:24px;">
+        <div class="code-block" style="text-align:left;max-width:700px;margin:0 auto;"><span class="c"># Agent mode — one parameter unlocks everything</span>
+curl https://niceguyapi-repo.vercel.app/v1/chat/completions \
+  -H <span class="s">"Content-Type: application/json"</span> \
+  -H <span class="s">"X-API-Key: nga_live_YOUR_KEY"</span> \
+  -d <span class="s">'{
+    "agent": true,
+    "model": "openai/gpt-oss-120b:free",
+    "messages": [{"role": "user", "content": "Find today\'s top AI news and summarize it"}]
+  }'</span></div>
+      </div>
+    </div>
+
     <!-- TRY CHAT SECTION -->
     <div class="section" style="text-align:center;">
       <h2>Try It Right Now</h2>
@@ -509,6 +573,10 @@ res = requests.post(
             <span class="chat-title">AI Chat</span>
             <span class="chat-badge free" id="chat-tier-badge">Free</span>
             <span class="chat-meta" id="chat-usage">0/14</span>
+            <label style="display:flex;align-items:center;gap:4px;margin-left:8px;font-size:12px;cursor:pointer;color:#9ca3af;">
+              <input type="checkbox" id="agent-toggle" onchange="toggleAgent()" style="accent-color:#6366f1;">
+              <span>🤖 Agent</span>
+            </label>
           </div>
           <button class="chat-reset" onclick="resetChat()">Reset</button>
         </div>
@@ -597,7 +665,27 @@ openclaw start</div>
           <p>This returns your current usage, monthly limit, tier info, and available models.</p>
         </div>
         <div class="guide-card">
-          <h3><span class="num">7</span>Pick the Right Model</h3>
+          <h3><span class="num">7</span>Use Agent Mode (Pro &amp; Premium)</h3>
+          <p>Agent mode turns the AI into an autonomous assistant that can search the web, read webpages, and do calculations. Perfect for research, current events, and multi-step tasks.</p>
+          <div class="code-block"><span class="c"># Enable agent mode with one parameter</span>
+curl https://niceguyapi-repo.vercel.app/v1/chat/completions \
+  -H <span class="s">"Content-Type: application/json"</span> \
+  -H <span class="s">"X-API-Key: nga_live_YOUR_KEY"</span> \
+  -d <span class="s">'{
+    "model": "openai/gpt-oss-120b:free",
+    "agent": true,
+    "messages": [{"role": "user", "content": "What happened in AI news today? Summarize the top 3 stories."}]
+  }'</span>
+
+<span class="c"># The agent will:</span>
+<span class="c"># 1. Search the web for "AI news today"</span>
+<span class="c"># 2. Fetch the top result pages</span>
+<span class="c"># 3. Synthesize a summary</span></div>
+          <p>You can also use the <strong>POST /v1/agent</strong> endpoint directly for explicit agent calls.</p>
+          <div class="tip">💡 Agent mode works best with GPT-OSS 120B or higher models. Each agent request counts as 1 API call but may use up to 5 internal LLM round-trips.</div>
+        </div>
+        <div class="guide-card">
+          <h3><span class="num">8</span>Pick the Right Model</h3>
           <p>Different models are better at different tasks:</p>
           <div class="code-block">Free Tier Models (no credit card — 23+ models):
   • deepseek/deepseek-v4-flash:free — Best all-around
@@ -623,7 +711,7 @@ Premium Models (requires Premium plan — top-tier AI):
       <div class="faq-list">
         <div class="faq-item">
           <div class="faq-q" onclick="toggleFaq(this)"><span>What is NiceGuyAPI?</span><span class="arrow">▼</span></div>
-          <div class="faq-a">NiceGuyAPI is an AI model gateway. It gives you one API key that works with 17+ AI models — including DeepSeek, Claude, GPT-4o, Gemini, and more. Instead of signing up for 5 different services and managing 5 different keys, you get one key that works everywhere.</div>
+          <div class="faq-a">NiceGuyAPI is an AI model gateway. It gives you one API key that works with 23+ AI models — including DeepSeek, Claude, GPT-4o, Gemini, and more. Pro and Premium tiers also include an autonomous AI Agent that can search the web, read webpages, and perform multi-step tasks.</div>
         </div>
         <div class="faq-item">
           <div class="faq-q" onclick="toggleFaq(this)"><span>Do I need to know how to code?</span><span class="arrow">▼</span></div>
@@ -634,8 +722,12 @@ Premium Models (requires Premium plan — top-tier AI):
           <div class="faq-a">Each time you send a message to the AI, that is one request. The free plan gives you 14 messages per month. This is enough to try everything and see if NiceGuyAPI is right for you. For more, Pro gives 40 requests and Premium gives 500 per month.</div>
         </div>
         <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)"><span>What is the AI Agent? How does it work?</span><span class="arrow">▼</span></div>
+          <div class="faq-a">The AI Agent is an autonomous mode (Pro and Premium) that goes beyond simple chat. When you enable Agent mode, the AI can search the web for real-time information, fetch and read webpages, and perform calculations — all autonomously. You give it a goal, it figures out the steps. For example: "Find the latest news about AI and summarize it" — the agent searches, reads, and synthesizes automatically. It uses up to 5 LLM round-trips per request to plan and execute.</div>
+        </div>
+        <div class="faq-item">
           <div class="faq-q" onclick="toggleFaq(this)"><span>Why does Premium have 500 requests?</span><span class="arrow">▼</span></div>
-          <div class="faq-a">Premium is built for developers and power users who integrate the API into apps, tools, and workflows. At 500 requests per month for $27, you get outstanding value — plus access to Claude, GPT-4o, Gemini, and our creation tools (images, songs, apps, games, and hosting).</div>
+          <div class="faq-a">Premium is built for developers and power users who integrate the API into apps, tools, and workflows. At 500 requests per month for $27, you get outstanding value — plus access to Claude, GPT-4o, Gemini, full Agent capabilities, and creation tools (images, songs, apps, games, and hosting).</div>
         </div>
         <div class="faq-item">
           <div class="faq-q" onclick="toggleFaq(this)"><span>What is OpenClaw and how do I use it?</span><span class="arrow">▼</span></div>
@@ -665,7 +757,7 @@ Premium Models (requires Premium plan — top-tier AI):
 </div>
 
 <footer>
-  <p>⚡ NiceGuyAPI v3.5 — One API for Every AI Model</p>
+  <p>⚡ NiceGuyAPI v4.0 — One API for Every AI Model + Autonomous Agent</p>
   <p style="margin-top:4px;">Powered by <a href="https://openrouter.ai" target="_blank">OpenRouter</a> | <a href="https://github.com/MrGhostGuy/stax-agent/tree/master/niceguyapi" target="_blank">GitHub</a></p>
 </footer>
 
@@ -728,7 +820,7 @@ function copyKey(){
   });
 }
 
-var chatKey=null,chatTier='Free',chatUsage={used:0,total:14};
+var chatKey=null,chatTier='Free',chatUsage={used:0,total:14},chatAgent=false;
 
 async function startChat(){
   var email=document.getElementById('chat-email').value.trim();
@@ -740,7 +832,7 @@ async function startChat(){
     var res=await fetch(API_BASE+'/v1/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,tier:'free'})});
     var data=await res.json();
     if(res.ok&&data.api_key){
-      chatKey=data.api_key;chatTier=data.tier||'Free';chatUsage={used:0,total:14};
+      chatKey=data.api_key;chatTier=data.tier||'Free';chatUsage={used:0,total:14};chatAgent=false;
       localStorage.setItem('niceguyapi_chat',JSON.stringify({key:chatKey,email:email,tier:chatTier,used:0}));
       showChatUI();
     }else{
@@ -786,6 +878,25 @@ function addMessage(role,text){
   container.scrollTop=container.scrollHeight;
 }
 
+function addToolCall(toolName,args,result){
+  var container=document.getElementById('chat-messages');
+  var div=document.createElement('div');
+  div.className='chat-msg assistant';
+  var summary=toolName+'('+(args.query||args.url||args.expression||'')+')';
+  var body='<strong>🔧 '+toolName+'</strong><br><code style="font-size:11px;color:#9ca3af;">'+summary+'</code>';
+  if(result)body+='<br><span style="font-size:13px;">'+result.substring(0,300).replace(/\n/g,' ')+(result.length>300?'...':'')+'</span>';
+  div.innerHTML='<div class="avatar">🔧</div><div class="bubble" style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.15);">'+body+'</div>';
+  container.appendChild(div);
+  container.scrollTop=container.scrollHeight;
+}
+
+function toggleAgent(){
+  chatAgent=document.getElementById('agent-toggle').checked;
+  if(chatAgent){
+    addMessage('assistant','🤖 Agent mode enabled! I can now search the web, read webpages, and do calculations. Ask me something that needs real-time info!');
+  }
+}
+
 async function sendChat(){
   var input=document.getElementById('chat-input');
   var btn=document.getElementById('chat-send-btn');
@@ -795,11 +906,14 @@ async function sendChat(){
   var container=document.getElementById('chat-messages');
   var typing=document.createElement('div');
   typing.className='chat-msg assistant';typing.id='typing-indicator';
-  typing.innerHTML='<div class="avatar">🤖</div><div class="bubble typing">Thinking...</div>';
+  typing.innerHTML='<div class="avatar">🤖</div><div class="bubble typing">'+(chatAgent?'Planning...':'Thinking...')+'</div>';
   container.appendChild(typing);container.scrollTop=container.scrollHeight;
   try{
-    var res=await fetch(API_BASE+'/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':chatKey},body:JSON.stringify({model:'deepseek/deepseek-v4-flash:free',messages:[{role:'user',content:text}]})});
+    var body={model:chatAgent?'openai/gpt-oss-120b:free':'deepseek/deepseek-v4-flash:free',messages:[{role:'user',content:text}]};
+    if(chatAgent)body.agent=true;
+    var res=await fetch(API_BASE+'/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':chatKey},body:JSON.stringify(body)});
     typing.remove();
+    if(res.status===403){addMessage('assistant','🤖 Agent mode requires Pro or Premium. Upgrade to unlock agent capabilities!');return;}
     if(res.status===429){addMessage('assistant','⚠️ You have hit your monthly request limit! Upgrade to Pro (40 req/mo) or Premium (500 req/mo) for more.');return;}
     var data=await res.json();
     var reply=(data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content)||(data.error&&data.error.message)||'Sorry, something went wrong. Try again.';
