@@ -43,10 +43,22 @@ async function loadDb() {
     const blobId = process.env.JSONBLOB_ID;
     if (blobId) {
       const r = await fetch(`https://jsonblob.com/api/jsonBlob/${blobId}`);
-      if (r.ok) { localCache = await r.json(); return localCache; }
+      if (r.ok) {
+        const blob = await r.json();
+        localCache = { keys: {}, byEmail: {}, byPrefix: {}, billing: {}, agent_history: {}, ...blob };
+        if (!localCache.agent_history) localCache.agent_history = {};
+        return localCache;
+      }
     }
   } catch (e) { console.warn('[NiceGuyAPI] DB load error:', e.message); }
   localCache = { keys: {}, byEmail: {}, byPrefix: {}, billing: {}, agent_history: {} };
+  // Ensure all required fields exist (for old blobs)
+  if (!localCache.keys) localCache.keys = {};
+  if (!localCache.byEmail) localCache.byEmail = {};
+  if (!localCache.byPrefix) localCache.byPrefix = {};
+  if (!localCache.billing) localCache.billing = {};
+  if (!localCache.agent_history) localCache.agent_history = {};
+
   return localCache;
 }
 
