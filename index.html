@@ -460,7 +460,7 @@
       <h2>See How Simple It Is</h2>
       <p class="sub">One request. Any model. Here is a cURL example:</p>
       <div class="code-block"><span class="c"># Ask anything to any AI model</span>
-curl https://niceguyapi.onrender.com/v1/chat/completions <span class="k">\</span>
+curl https://niceguyapi-repo.vercel.app/v1/chat/completions <span class="k">\</span>
   -H <span class="s">"Content-Type: application/json"</span> <span class="k">\</span>
   -H <span class="s">"X-API-Key: nga_live_..."</span> <span class="k">\</span>
   -d <span class="s">'{
@@ -471,7 +471,7 @@ curl https://niceguyapi.onrender.com/v1/chat/completions <span class="k">\</span
 <span class="c"># Works with Python too:</span>
 <span class="k">import</span> requests
 res = requests.post(
-    <span class="s">"https://niceguyapi.onrender.com/v1/chat/completions"</span>,
+    <span class="s">"https://niceguyapi-repo.vercel.app/v1/chat/completions"</span>,
     headers={<span class="s">"X-API-Key"</span>: <span class="s">"nga_live_..."</span>},
     json={<span class="s">"model"</span>: <span class="s">"anthropic/claude-sonnet-4-20250514"</span>,
           <span class="s">"messages"</span>: [{<span class="s">"role"</span>: <span class="s">"user"</span>, <span class="s">"content"</span>: <span class="s">"Hello!"}]}
@@ -535,14 +535,14 @@ res = requests.post(
         <div class="guide-card">
           <h3><span class="num">2</span>Try It in Your Browser (1 minute — no code!)</h3>
           <p>You can test your API key right now without writing any code. Just paste this URL into your browser (replace YOUR_KEY with your key):</p>
-          <div class="code-block" style="font-size:11px;">https://niceguyapi.onrender.com/v1/models?key=YOUR_KEY</div>
+          <div class="code-block" style="font-size:11px;">https://niceguyapi-repo.vercel.app/v1/models?key=YOUR_KEY</div>
           <p>This will show you all the AI models available on your plan. If you see a list of models — your key works!</p>
           <div class="tip">💡 No code editor? No problem. You can use <strong>curl</strong> from any terminal, or use a free tool like <strong>ReqBin</strong> (reqbin.com) to test APIs from your browser.</div>
         </div>
         <div class="guide-card">
           <h3><span class="num">3</span>Use It with cURL (Terminal)</h3>
           <p>Open your computer's terminal (Command Prompt on Windows, Terminal on Mac/Linux) and paste this:</p>
-          <div class="code-block">curl https://niceguyapi.onrender.com/v1/chat/completions \
+          <div class="code-block">curl https://niceguyapi-repo.vercel.app/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "X-API-Key: nga_live_YOUR_KEY" \
   -d '{"model":"deepseek/deepseek-v4-flash:free","messages":[{"role":"user","content":"Say hello!"}]}'</div>
@@ -556,7 +556,7 @@ res = requests.post(
           <div class="code-block">import requests
 
 API_KEY = "nga_live_YOUR_KEY"
-BASE_URL = "https://niceguyapi.onrender.com"
+BASE_URL = "https://niceguyapi-repo.vercel.app"
 
 while True:
     msg = input("You: ")
@@ -578,7 +578,7 @@ while True:
 npm install -g openclaw
 
 # Set your NiceGuyAPI key as the model provider
-openclaw config set model.baseUrl https://niceguyapi.onrender.com/v1
+openclaw config set model.baseUrl https://niceguyapi-repo.vercel.app/v1
 openclaw config set model.apiKey nga_live_YOUR_KEY
 openclaw config set model.name deepseek/deepseek-v4-flash:free
 
@@ -591,7 +591,7 @@ openclaw start</div>
         <div class="guide-card">
           <h3><span class="num">6</span>Manage Your Usage</h3>
           <p>Check how many requests you have left:</p>
-          <div class="code-block">curl https://niceguyapi.onrender.com/v1/usage \
+          <div class="code-block">curl https://niceguyapi-repo.vercel.app/v1/usage \
   -H "X-API-Key: nga_live_YOUR_KEY"</div>
           <p>This returns your current usage, monthly limit, tier info, and available models.</p>
         </div>
@@ -669,7 +669,7 @@ Premium Models (requires Premium plan):
 </footer>
 
 <script>
-var API_BASE = 'https://niceguyapi.onrender.com';
+var API_BASE = 'https://niceguyapi-repo.vercel.app';
 
 function showTab(name) {
   ['home','chat','guide','faq'].forEach(function(t){
