@@ -581,6 +581,10 @@ async function handleAgent(req, res) {
   const { messages, model } = req.body;
   const requestedModel = model || 'openai/gpt-oss-120b:free';
 
+  if (!req.apiKey.tier_config.allows_agent)
+    return apiError(res, 403, 'Agent mode requires Pro or Premium. Upgrade at https://mrghostguy.github.io/niceguyapi/', 'tier_error',
+      { upgrade_url: 'https://mrghostguy.github.io/niceguyapi/' });
+
   if (!OPENROUTER_KEY)
     return apiError(res, 503, 'AI service not configured.', 'service_unavailable');
 
