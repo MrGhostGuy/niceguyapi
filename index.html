@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NiceGuyAPI — One API for Every AI Model</title>
-  <meta name="description" content="Access 17+ AI models through a single API. Chat with DeepSeek, Claude, GPT-4o, Gemini and more. Try it free — no credit card needed.">
+  <meta name="description" content="Access 23+ AI models through a single API. Autonomous AI Agent with web search, fetch, calculator. Stripe billing, key management. Try free.">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif; background: #08080c; color: #d4d4de; line-height: 1.6; }
@@ -757,7 +757,7 @@ Premium Models (requires Premium plan — top-tier AI):
 </div>
 
 <footer>
-  <p>⚡ NiceGuyAPI v4.0 — One API for Every AI Model + Autonomous Agent</p>
+  <p>⚡ NiceGuyAPI v5.0 — One API for Every AI Model + Autonomous Agent</p>
   <p style="margin-top:4px;">Powered by <a href="https://openrouter.ai" target="_blank">OpenRouter</a> | <a href="https://github.com/MrGhostGuy/stax-agent/tree/master/niceguyapi" target="_blank">GitHub</a></p>
 </footer>
 
@@ -765,7 +765,7 @@ Premium Models (requires Premium plan — top-tier AI):
 var API_BASE = 'https://niceguyapi-repo.vercel.app';
 
 function showTab(name) {
-  ['home','chat','guide','faq'].forEach(function(t){
+  ['home','chat','guide','faq','dash'].forEach(function(t){
     var c = document.getElementById('content-'+t);
     var b = document.getElementById('tab-'+t);
     if(c) c.className = 'tab-content' + (t===name?' active':'');
@@ -802,7 +802,7 @@ async function handleSignup() {
       var tr={free:'14',pro:'40',premium:'500'};
       document.getElementById('free-tier-req').textContent=tr[plan]||'14';
       msg.innerHTML='<span class="success">Your key is ready! Save it above.</span>';
-      if(plan!=='free' && data.stripe_url){window.location.href=data.stripe_url;}
+      if(data.stripe_url){window.location.href=data.stripe_url;}
     }else{
       msg.innerHTML='<span class="error">'+(data.error?.message||'Something went wrong. Try again.')+'</span>';
     }
@@ -930,7 +930,15 @@ async function sendChat(){
   if(saved){try{var obj=JSON.parse(saved);if(obj.key){chatKey=obj.key;chatTier=obj.tier||'Free';chatUsage.used=obj.used||0;showChatUI();}}catch(e){}}
 })();
 
-if(window.location.hash==='#success'){
+var urlParams = new URLSearchParams(window.location.search);
+if(urlParams.get('canceled')==='true'){
+  document.getElementById('signup-msg').innerHTML='<span style="color:#fbbf24;">Payment canceled. You can try again anytime.</span>;
+}
+if(window.location.hash==='#success' || urlParams.get('success')==='true'){
+  document.getElementById('signup').style.display='none';
+  var sb=document.getElementById('success-box');if(sb)sb.style.display='block';
+  document.getElementById('signup-msg').innerHTML='<span class="success">?? Payment successful! Your account has been upgraded.</span>';
+}
   document.getElementById('signup').style.display='none';
   var sb=document.getElementById('success-box');if(sb)sb.style.display='block';
   document.getElementById('signup-msg').innerHTML='<span class="success">🎉 Payment successful! Your account has been upgraded.</span>';
