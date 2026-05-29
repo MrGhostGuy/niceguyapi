@@ -235,31 +235,41 @@ async function runAgent(messages, model, apiKey, historyLimit = 6) {
 
     const data = await orRes.json();
     const choice = data.choices?.[0];
-    if (!choice) return { error: true, status: 502, body: JSON.stringify(data) };
+    if (!choice) {
+      console.error('[Agent] No choice in response:', JSON.stringify(data).substring(0, 500));
+      return { error: true, status: 502, body: JSON.stringify(data) };
+    }
 
     const assistantMsg = choice.message;
 
     // Check if LLM wants to call tools
     if (assistantMsg.tool_calls && assistantMsg.tool_calls.length > 0) {
       totalToolCalls += assistantMsg.tool_calls.length;
-      agentMessages.push(assistantMsg);
+
+      // Push assistant message with tool_calls (must include content even if null)
+      agentMessages.push({
+        role: 'assistant',
+        content: assistantMsg.content || null,
+        tool_calls: assistantMsg.tool_calls,
+      });
 
       // Execute all tool calls in parallel
       const toolResults = await Promise.all(
         assistantMsg.tool_calls.map(async (tc) => {
           const fn = tc.function;
-          const args = JSON.parse(fn.arguments || '{}');
+          let args;
+          try { args = JSON.parse(fn.arguments || '{}'); } catch(e) { args = {}; }
           let result;
 
           switch (fn.name) {
             case 'web_search':
-              result = await toolWebSearch(args.query);
+              result = await toolWebSearch(args.query || '');
               break;
             case 'web_fetch':
-              result = await toolWebFetch(args.url);
+              result = await toolWebFetch(args.url || '');
               break;
             case 'calculate':
-              result = toolCalculate(args.expression);
+              result = toolCalculate(args.expression || '');
               break;
             default:
               result = `Unknown tool: ${fn.name}`;
@@ -268,13 +278,13 @@ async function runAgent(messages, model, apiKey, historyLimit = 6) {
           return {
             tool_call_id: tc.id,
             role: 'tool',
-            content: String(result).substring(0, 4000), // cap tool output
+            name: fn.name,
+            content: String(result).substring(0, 4000),
           };
         })
       );
 
       agentMessages.push(...toolResults);
-      // Continue loop — LLM will see tool results and decide what to do next
       continue;
     }
 
@@ -313,25 +323,34 @@ async function runAgent(messages, model, apiKey, historyLimit = 6) {
     };
   }
 
-  // Max iterations reached — return what we have
-  return {
-    error: false,
-    data: {
-      id: `chatcmpl-${uuidv4()}`,
-      object: 'chat.completion',
-      created: Math.floor(Date.now() / 1000),
-      model,
-      choices: [{
-        index: 0,
-        message: {
-          role: 'assistant',
-          content: "I've gathered the information through multiple searches. Let me compile my findings for you above.",
-          finish_reason: 'length',
-        },
-      }],
-      usage: { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0, _agent_tool_calls: totalToolCalls },
-    },
-  };
+  // Max iterations reached — get one final response without tools
+  try {
+    const finalRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENROUTER_KEY}`,
+        'HTTP-Referer': 'https://mrghostguy.github.io/niceguyapi/',
+        'X-Title': 'NiceGuyAPI Agent',
+      },
+      body: JSON.stringify({ model, messages: agentMessages, max_tokens: 2048 }),
+    });
+    const finalData = await finalRes.json();
+    const finalContent = finalData.choices?.[0]?.message?.content || 'I encountered an issue compiling the final response.';
+    return {
+      error: false,
+      data: {
+        id: finalData.id || `chatcmpl-${uuidv4()}`,
+        object: 'chat.completion',
+        created: Math.floor(Date.now() / 1000),
+        model,
+        choices: [{ index: 0, message: { role: 'assistant', content: finalContent, finish_reason: 'stop' } }],
+        usage: finalData.usage || { prompt_tokens: 0, completion_tokens: 0, total_tokens: 0, _agent_tool_calls: totalToolCalls },
+      },
+    };
+  } catch(e) {
+    return { error: true, status: 502, body: JSON.stringify({ error: e.message }) };
+  }
 }
 
 // ── App ────────────────────────────────────────────────────────────────────
