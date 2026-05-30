@@ -1,8 +1,9 @@
 /**
- * NiceGuyAPI v5.0 - AI Agent Gateway (Vercel Serverless)
+ * NiceGuyAPI v5.1 - AI Agent Gateway with Custom Agents (Vercel Serverless)
  *
  * OpenAI-compatible chat completions via OpenRouter.
  * 23+ AI models. Autonomous Agent with web search, fetch, calculator.
+ * Custom Agents with name/personality/vibe/purpose.
  * Stripe Checkout, subscriber dashboard, key management.
  *
  * Uses jsonblob.com for persistent storage (free tier).
@@ -28,9 +29,9 @@ if (STRIPE_SECRET) {
 }
 
 const TIERS = {
-  free:     { name:'Free',     price:0,  monthly_requests:14,  rate_limit_per_minute:5,  rate_limit_per_day:10,   max_tokens:4096,  agent:false, image:false, song:false, games:false },
-  pro:      { name:'Pro',      price:6,  monthly_requests:40,  rate_limit_per_minute:20, rate_limit_per_day:200,  max_tokens:32768, agent:true,  image:true,  song:true,  games:false },
-  premium:  { name:'Premium',  price:27, monthly_requests:500, rate_limit_per_minute:60, rate_limit_per_day:1000, max_tokens:131072, agent:true,  image:true,  song:true,  games:true },
+  free:     { name:'Free',     price:0,  monthly_requests:14,  rate_limit_per_minute:5,  rate_limit_per_day:10,   max_tokens:4096,  agent:false, custom_agent:false },
+  pro:      { name:'Pro',      price:6,  monthly_requests:40,  rate_limit_per_minute:20, rate_limit_per_day:200,  max_tokens:32768, agent:true,  custom_agent:1 },
+  premium:  { name:'Premium',  price:27, monthly_requests:500, rate_limit_per_minute:60, rate_limit_per_day:1000, max_tokens:131072, agent:true,  custom_agent:999 },
 };
 
 function apiError(res, s, msg, type, extra) { return res.status(s).json({ error: { message: msg, type, ...(extra||{}) } }); }
@@ -39,12 +40,12 @@ function apiError(res, s, msg, type, extra) { return res.status(s).json({ error:
 let cache = null;
 async function loadDb() {
   if (cache) return cache;
-  cache = { keys:{}, byEmail:{}, byPrefix:{}, billing:{}, agent_history:{}, rate_limits:{} };
+  cache = { keys:{}, byEmail:{}, byPrefix:{}, billing:{}, agent_history:{}, rate_limits:{}, agents:{}, agent_histories:{} };
   try {
     const id = process.env.JSONBLOB_ID;
     if (id) { const r = await fetch('https://jsonblob.com/api/jsonBlob/'+id); if (r.ok) cache = { ...cache, ...await r.json() }; }
   } catch(e) { console.warn('[NG] DB load:', e.message); }
-  ['keys','byEmail','byPrefix','billing','agent_history','rate_limits'].forEach(f => { if (!cache[f]) cache[f] = {}; });
+  ['keys','byEmail','byPrefix','billing','agent_history','rate_limits','agents','agent_histories'].forEach(f => { if (!cache[f]) cache[f] = {}; });
   return cache;
 }
 async function saveDb(db) {
@@ -97,11 +98,34 @@ const AGENT_TOOLS = [
 
 const AGENT_PROMPT = 'You are NiceGuyAPI Agent, an autonomous AI assistant with real-time tools: web_search (search the web for current info), web_fetch (read a webpage), calculate (evaluate math).\n\nUse tools when you need current info, facts beyond your knowledge, or math. After getting tool results, synthesize a clear answer. Be concise but thorough. Answer directly if you have enough knowledge.';
 
+// Build custom agent system prompt
+function buildCustomAgentPrompt(agent) {
+  let prompt = 'You are ' + agent.name + ', a custom AI agent.';
+  if (agent.personality) prompt += '\n\nYour personality: ' + agent.personality;
+  if (agent.vibe) prompt += '\n\nYour vibe: ' + agent.vibe;
+  if (agent.purpose) prompt += '\n\nYour purpose: ' + agent.purpose;
+  prompt += '\n\nYou have real-time tools available: web_search (search the web), web_fetch (read webpages), calculate (evaluate math). Use them when you need current information or calculations.';
+  prompt += '\n\nBe helpful, stay in character, and focus on your defined purpose.';
+  return prompt;
+}
+
 // Agent Runner
-async function runAgent(messages, model, apiKey, histLimit) {
+async function runAgent(messages, model, apiKey, agentId, histLimit) {
   if (!histLimit) histLimit = 6;
-  const db = await loadDb(), hist = db.agent_history[apiKey.id]||[];
-  const am = [{ role:'system', content:AGENT_PROMPT }, ...hist.slice(-histLimit*2), ...messages];
+  const db = await loadDb();
+  
+  // Build system prompt - use custom agent if provided
+  let systemPrompt = AGENT_PROMPT;
+  let historyKey = apiKey.id;
+  
+  if (agentId && db.agents[agentId]) {
+    const customAgent = db.agents[agentId];
+    systemPrompt = buildCustomAgentPrompt(customAgent);
+    historyKey = agentId;
+  }
+  
+  const hist = db.agent_histories[historyKey]||[];
+  const am = [{ role:'system', content:systemPrompt }, ...hist.slice(-histLimit*2), ...messages];
   let tools = 0;
 
   for (let i=0; i<5; i++) {
@@ -132,7 +156,7 @@ async function runAgent(messages, model, apiKey, histLimit) {
     }
 
     const fc = msg.content||'';
-    db.agent_history[apiKey.id] = [...hist, ...messages.filter(m=>m.role==='user').map(m=>({role:'user',content:m.content})), {role:'assistant',content:fc}].slice(-histLimit*2);
+    db.agent_histories[historyKey] = [...hist, ...messages.filter(m=>m.role==='user').map(m=>({role:'user',content:m.content})), {role:'assistant',content:fc}].slice(-histLimit*2);
     await saveDb(db);
     return { error:false, data:{ id:data.id||'chatcmpl-'+uuidv4(), object:'chat.completion', created:Math.floor(Date.now()/1000), model, choices:[{index:0,message:{role:'assistant',content:fc,finish_reason:choice.finish_reason}}], usage:{prompt_tokens:data.usage?.prompt_tokens||0,completion_tokens:data.usage?.completion_tokens||0,total_tokens:data.usage?.total_tokens||0,_agent_tool_calls:tools} } };
   }
@@ -169,10 +193,10 @@ app.post('/v1/stripe/webhook', express.raw({type:'application/json'}), (req,res)
 app.use(express.json({limit:'1mb'})); app.use(cors()); app.use(helmet({contentSecurityPolicy:false}));
 
 // Health
-app.get('/health', (req,res) => res.status(200).json({ status:'ok', version:'5.0.0', timestamp:new Date().toISOString(), storage:process.env.JSONBLOB_ID?'persistent':'memory-only', agent:true, stripe:!!stripe }));
+app.get('/health', (req,res) => res.status(200).json({ status:'ok', version:'5.1.0', timestamp:new Date().toISOString(), storage:process.env.JSONBLOB_ID?'persistent':'memory-only', agent:true, custom_agents:true, stripe:!!stripe }));
 
 // Root
-app.get('/', (req,res) => res.json({ name:'NiceGuyAPI', version:'5.0.0', description:'AI Model Gateway + Agent. Stripe + key management.', base_url:'/v1', pricing:{free:'$0/14req',pro:'$6/40req',premium:'$27/500req'}, auth:'X-API-Key header', endpoints:['GET /health','POST /v1/signup','GET /v1/models','POST /v1/chat/completions','POST /v1/agent','GET /v1/usage','GET /v1/keys','POST /v1/keys','DELETE /v1/keys/:prefix','POST /v1/keys/:prefix/rotate','POST /v1/agent/reset'] }));
+app.get('/', (req,res) => res.json({ name:'NiceGuyAPI', version:'5.1.0', description:'AI Model Gateway + Agent. Custom Agents. Stripe + key management.', base_url:'/v1', pricing:{free:'$0/14req',pro:'$6/40req',premium:'$27/500req'}, auth:'X-API-Key header', endpoints:['GET /health','POST /v1/signup','GET /v1/models','POST /v1/chat/completions','POST /v1/agent','GET /v1/usage','GET /v1/keys','POST /v1/keys','DELETE /v1/keys/:prefix','POST /v1/keys/:prefix/rotate','POST /v1/agent/reset','GET /v1/agents','POST /v1/agents','GET /v1/agents/:id','PUT /v1/agents/:id','DELETE /v1/agents/:id','POST /v1/agents/:id/reset'] }));
 
 // Signup
 app.post('/v1/signup', async (req,res) => {
@@ -254,10 +278,20 @@ app.get('/v1/models', auth, (req,res) => {
 
 // Chat
 app.post('/v1/chat/completions', auth, async (req,res) => {
-  const { messages, model, agent } = req.body;
+  const { messages, model, agent, agent_id } = req.body;
   if (!messages||!Array.isArray(messages)||!messages.length) return apiError(res,400,'Messages required','invalid_request');
-  if (agent===true||agent==='true') {
+  
+  if (agent===true||agent==='true'||agent_id) {
     if (!req.apiKey.tier_config.agent) return apiError(res,403,'Agent requires Pro/Premium','tier_error',{upgrade_url:'https://mrghostguy.github.io/niceguyapi/'});
+    
+    // Validate custom agent if provided
+    if (agent_id) {
+      const db = await loadDb();
+      const customAgent = db.agents[agent_id];
+      if (!customAgent) return apiError(res,404,'Custom agent not found','not_found');
+      if (customAgent.email !== req.apiKey.email) return apiError(res,403,'Not your agent','auth_error');
+    }
+    
     return handleAgent(req,res);
   }
   const reqModel = model||'openai/gpt-oss-120b:free';
@@ -278,7 +312,8 @@ async function handleAgent(req,res) {
   if (!req.apiKey.tier_config.agent) return apiError(res,403,'Agent requires Pro/Premium','tier_error',{upgrade_url:'https://mrghostguy.github.io/niceguyapi/'});
   if (!OPENROUTER_KEY) return apiError(res,503,'AI service not configured','service_unavailable');
   try {
-    const result = await runAgent(req.body.messages, req.body.model||'openai/gpt-oss-120b:free', req.apiKey);
+    const agentId = req.body.agent_id || null;
+    const result = await runAgent(req.body.messages, req.body.model||'openai/gpt-oss-120b:free', req.apiKey, agentId);
     if (result.error) return res.status(result.status).json(JSON.parse(result.body));
     req.apiKey.monthly_used++; req.apiKey.total_requests++; req.apiKey.last_used_at=new Date().toISOString();
     if (req._db) { req._db.keys[req.apiKey.id]=req.apiKey; await saveDb(req._db); }
@@ -286,7 +321,134 @@ async function handleAgent(req,res) {
   } catch(e) { apiError(res,502,'Agent error: '+e.message,'agent_error'); }
 }
 app.post('/v1/agent', auth, handleAgent);
-app.post('/v1/agent/reset', auth, async (req,res) => { const db=await loadDb(); delete db.agent_history[req.apiKey.id]; await saveDb(db); res.json({message:'Agent history cleared.'}); });
+app.post('/v1/agent/reset', auth, async (req,res) => { const db=await loadDb(); delete db.agent_history[req.apiKey.id]; delete db.agent_histories[req.apiKey.id]; await saveDb(db); res.json({message:'Agent history cleared.'}); });
+
+// Custom Agent Management
+app.get('/v1/agents', auth, async (req,res) => {
+  const db = await loadDb();
+  const userAgents = Object.values(db.agents).filter(a=>a.email===req.apiKey.email);
+  const tc = req.apiKey.tier_config;
+  res.json({
+    agents: userAgents.map(a=>({
+      id: a.id,
+      name: a.name,
+      personality: a.personality,
+      vibe: a.vibe,
+      purpose: a.purpose,
+      created_at: a.created_at,
+      updated_at: a.updated_at
+    })),
+    limit: tc.custom_agent,
+    current_count: userAgents.length
+  });
+});
+
+app.post('/v1/agents', auth, async (req,res) => {
+  const { name, personality, vibe, purpose } = req.body;
+  const db = await loadDb();
+  
+  // Check tier access
+  const tc = req.apiKey.tier_config;
+  const userAgents = Object.values(db.agents).filter(a=>a.email===req.apiKey.email);
+  
+  if (tc.custom_agent === 0) {
+    return apiError(res,403,'Custom agents require Pro/Premium','tier_error',{upgrade_url:'https://mrghostguy.github.io/niceguyapi/'});
+  }
+  
+  if (userAgents.length >= tc.custom_agent) {
+    return apiError(res,403,'Agent limit reached ('+tc.custom_agent+' agents max)','tier_error',{upgrade_url:'https://mrghostguy.github.io/niceguyapi/'});
+  }
+  
+  // Validate required fields
+  if (!name || typeof name !== 'string' || name.length < 1 || name.length > 50) {
+    return apiError(res,400,'Agent name required (1-50 chars)','invalid_request');
+  }
+  
+  const id = uuidv4();
+  db.agents[id] = {
+    id,
+    email: req.apiKey.email,
+    name: name.substring(0,50),
+    personality: personality ? personality.substring(0,500) : '',
+    vibe: vibe ? vibe.substring(0,200) : '',
+    purpose: purpose ? purpose.substring(0,500) : '',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+  
+  await saveDb(db);
+  res.status(201).json({
+    id,
+    name,
+    message: 'Custom agent created! Use agent_id: "' + id + '" in your chat calls.'
+  });
+});
+
+app.get('/v1/agents/:id', auth, async (req,res) => {
+  const db = await loadDb();
+  const agent = db.agents[req.params.id];
+  
+  if (!agent) return apiError(res,404,'Agent not found','not_found');
+  if (agent.email !== req.apiKey.email) return apiError(res,403,'Not your agent','auth_error');
+  
+  res.json({
+    id: agent.id,
+    name: agent.name,
+    personality: agent.personality,
+    vibe: agent.vibe,
+    purpose: agent.purpose,
+    created_at: agent.created_at,
+    updated_at: agent.updated_at
+  });
+});
+
+app.put('/v1/agents/:id', auth, async (req,res) => {
+  const { name, personality, vibe, purpose } = req.body;
+  const db = await loadDb();
+  const agent = db.agents[req.params.id];
+  
+  if (!agent) return apiError(res,404,'Agent not found','not_found');
+  if (agent.email !== req.apiKey.email) return apiError(res,403,'Not your agent','auth_error');
+  
+  if (name) agent.name = name.substring(0,50);
+  if (personality !== undefined) agent.personality = personality.substring(0,500);
+  if (vibe !== undefined) agent.vibe = vibe.substring(0,200);
+  if (purpose !== undefined) agent.purpose = purpose.substring(0,500);
+  agent.updated_at = new Date().toISOString();
+  
+  await saveDb(db);
+  res.json({
+    id: agent.id,
+    name: agent.name,
+    message: 'Agent updated.'
+  });
+});
+
+app.delete('/v1/agents/:id', auth, async (req,res) => {
+  const db = await loadDb();
+  const agent = db.agents[req.params.id];
+  
+  if (!agent) return apiError(res,404,'Agent not found','not_found');
+  if (agent.email !== req.apiKey.email) return apiError(res,403,'Not your agent','auth_error');
+  
+  delete db.agents[req.params.id];
+  delete db.agent_histories[req.params.id]; // Clean up agent history
+  
+  await saveDb(db);
+  res.json({ message: 'Agent deleted.' });
+});
+
+app.post('/v1/agents/:id/reset', auth, async (req,res) => {
+  const db = await loadDb();
+  const agent = db.agents[req.params.id];
+  
+  if (!agent) return apiError(res,404,'Agent not found','not_found');
+  if (agent.email !== req.apiKey.email) return apiError(res,403,'Not your agent','auth_error');
+  
+  delete db.agent_histories[req.params.id];
+  await saveDb(db);
+  res.json({ message: 'Agent history cleared.' });
+});
 
 // Key Management
 app.get('/v1/keys', auth, async (req,res) => {
@@ -325,7 +487,7 @@ app.get('/v1/usage', auth, (req,res) => {
   res.json({
     email:k.email, tier:k.effective_tier, monthly_limit:k.effective_limit, monthly_used:k.monthly_used,
     monthly_remaining:Math.max(0,k.effective_limit-k.monthly_used), total_requests:k.total_requests||0,
-    features:{agent:tc.agent,agent_tools:tc.agent?['web_search','web_fetch','calculate']:[],image:tc.image,song:tc.song,games:tc.games},
+    features:{agent:tc.agent,custom_agent:tc.custom_agent,agent_tools:tc.agent?['web_search','web_fetch','calculate']:[],image:tc.image,song:tc.song,games:tc.games},
     rate_limit:{per_minute:tc.rate_limit_per_minute,per_day:tc.rate_limit_per_day}, available_models:models.length,
   });
 });
