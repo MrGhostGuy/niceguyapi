@@ -739,7 +739,7 @@ Premium Models (requires Premium plan — top-tier AI):
         </div>
         <div class="faq-item">
           <div class="faq-q" onclick="toggleFaq(this)"><span>What does "12 requests per month" mean?</span><span class="arrow">▼</span></div>
-          <div class="faq-a">Each time you send a message to the AI, that is one request. The free plan gives you 14 messages per month. This is enough to try everything and see if NiceGuyAPI is right for you. For more, Pro gives 40 requests and Premium gives 500 per month.</div>
+          <div class="faq-a">Each time you send a message to the AI, that is one request. The free plan gives you 12 messages per month. This is enough to try everything and see if NiceGuyAPI is right for you. For more, Pro gives 40 requests and Premium gives 250 per month.</div>
         </div>
         <div class="faq-item">
           <div class="faq-q" onclick="toggleFaq(this)"><span>What is the AI Agent? How does it work?</span><span class="arrow">▼</span></div>
@@ -781,6 +781,7 @@ Premium Models (requires Premium plan — top-tier AI):
     </div>
   </div>
   <!-- END FAQ TAB -->
+
   <!-- DASHBOARD TAB -->
   <div class="tab-content" id="content-dash">
     <div style="margin-top:20px;">
@@ -824,13 +825,19 @@ Premium Models (requires Premium plan — top-tier AI):
       </div>
     </div>
   </div>
+  <!-- END DASHBOARD TAB -->
 
-
+  <!-- SUCCESS BOX (hidden, shown after payment) -->
+  <div class="success-box" id="success-box">
+    <div class="checkmark">✅</div>
+    <h2>Payment Successful!</h2>
+    <p>Your account has been upgraded. Check your email for your API key if you don't see it above.</p>
+  </div>
 
 </div>
 
 <footer>
-  <p>⚡ NiceGuyAPI v5.2 — One API for Every AI Model + Autonomous Agent</p>
+  <p>⚡ NiceGuyAPI v5.3 — One API for Every AI Model + Autonomous Agent | bit.ly/NiceGuyAPI</p>
   <p style="margin-top:4px;">Powered by <a href="https://openrouter.ai" target="_blank">OpenRouter</a> | <a href="https://github.com/MrGhostGuy/stax-agent/tree/master/niceguyapi" target="_blank">GitHub</a></p>
 </footer>
 
@@ -1020,6 +1027,110 @@ var ci=document.getElementById('chat-input');if(ci)ci.addEventListener('keydown'
 function copyKey(key){navigator.clipboard.writeText(key).then(function(){alert('Copied to clipboard!');});}
 // QOL: Dashboard enter key
 document.addEventListener('DOMContentLoaded',function(){var dk=document.getElementById('dash-key-input');if(dk)dk.addEventListener('keydown',function(e){if(e.key==='Enter')dashLogin();});});
+
+// Dashboard functions
+var dashSessionKey = null;
+var dashSessionEmail = null;
+
+async function dashLogin() {
+  var keyInput = document.getElementById('dash-key-input').value.trim();
+  var msg = document.getElementById('dash-login-msg');
+  if (!keyInput) { msg.innerHTML = '<span style="color:#f87171;">Please enter your API key.</span>'; return; }
+  try {
+    var res = await fetch(API_BASE + '/v1/usage', { headers: { 'X-API-Key': keyInput } });
+    var data = await res.json();
+    if (res.ok && data.email) {
+      dashSessionKey = keyInput;
+      dashSessionEmail = data.email;
+      document.getElementById('dash-gate').style.display = 'none';
+      document.getElementById('dash-content').style.display = 'block';
+      renderDashboard(data);
+      loadKeys();
+    } else {
+      msg.innerHTML = '<span style="color:#f87171;">' + (data.error?.message || 'Invalid API key. Please check and try again.') + '</span>';
+    }
+  } catch(err) {
+    msg.innerHTML = '<span style="color:#f87171;">Connection error. Try again.</span>';
+  }
+}
+
+function renderDashboard(data) {
+  document.getElementById('dash-tier').textContent = data.tier.charAt(0).toUpperCase() + data.tier.slice(1);
+  var badge = document.getElementById('dash-tier-badge');
+  badge.textContent = data.tier.toUpperCase();
+  var tierColors = { free: ['rgba(99,102,241,0.2)','#818cf8'], pro: ['rgba(52,211,153,0.2)','#34d399'], premium: ['rgba(251,191,36,0.2)','#fbbf24'], platinum: ['rgba(168,85,247,0.2)','#c084fc'] };
+  var tc = tierColors[data.tier] || tierColors.free;
+  badge.style.background = tc[0]; badge.style.color = tc[1];
+  document.getElementById('dash-used').textContent = data.monthly_used || 0;
+  document.getElementById('dash-remaining').textContent = data.monthly_remaining !== undefined ? data.monthly_remaining : (data.monthly_limit - data.monthly_used);
+  document.getElementById('dash-total').textContent = data.monthly_limit >= 99999 ? '∞' : data.monthly_limit;
+  var pct = Math.min(100, ((data.monthly_used / Math.max(1, data.monthly_limit)) * 100));
+  if (data.monthly_limit >= 99999) pct = 0;
+  document.getElementById('dash-bar').style.width = pct + '%';
+  var features = document.getElementById('dash-features');
+  features.innerHTML = '';
+  if (data.features) {
+    if (data.features.agent) features.innerHTML += '<span class="badge" style="background:rgba(52,211,153,0.15);color:#34d399;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;">🤖 Agent</span>';
+    if (data.features.custom_agent) features.innerHTML += '<span class="badge" style="background:rgba(168,85,247,0.15);color:#c084fc;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;">Custom Agents (' + data.features.custom_agent + ')</span>';
+    if (data.features.image) features.innerHTML += '<span class="badge" style="background:rgba(99,102,241,0.15);color:#818cf8;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;">🎨 Images</span>';
+    if (data.features.song) features.innerHTML += '<span class="badge" style="background:rgba(251,191,36,0.15);color:#fbbf24;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;">🎵 Songs</span>';
+  }
+}
+
+async function loadKeys() {
+  if (!dashSessionKey) return;
+  try {
+    var res = await fetch(API_BASE + '/v1/keys', { headers: { 'X-API-Key': dashSessionKey } });
+    var data = await res.json();
+    var list = document.getElementById('dash-keys-list');
+    list.innerHTML = '';
+    if (data.keys && data.keys.length) {
+      data.keys.forEach(function(k) {
+        var div = document.createElement('div');
+        div.style.cssText = 'display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:12px 16px;';
+        div.innerHTML = '<div><div style="font-family:monospace;font-size:13px;color:#a5b4fc;">' + k.prefix + '••••••••</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">' + k.label + ' • ' + k.tier + ' • ' + k.monthly_used + '/' + k.monthly_limit + ' used</div></div><div style="display:flex;gap:4px;"><button onclick="copyKey(\'nga_live_' + k.prefix + '\')" style="padding:4px 10px;font-size:11px;background:rgba(99,102,241,0.2);color:#818cf8;border:1px solid rgba(99,102,241,0.3);border-radius:6px;cursor:pointer;">Copy</button><button onclick="rotateKey(\'' + k.prefix + '\')" style="padding:4px 10px;font-size:11px;background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.3);border-radius:6px;cursor:pointer;">Rotate</button></div>';
+        list.appendChild(div);
+      });
+    } else {
+      list.innerHTML = '<p style="color:#6b7280;font-size:13px;text-align:center;padding:16px;">No keys found.</p>';
+    }
+  } catch(e) {}
+}
+
+async function rotateKey(prefix) {
+  if (!dashSessionKey) return;
+  try {
+    var res = await fetch(API_BASE + '/v1/keys/' + prefix + '/rotate', { method: 'POST', headers: { 'X-API-Key': dashSessionKey } });
+    var data = await res.json();
+    if (data.api_key) {
+      alert('New key: ' + data.api_key + '\n\nPaste this now — the old key no longer works.');
+      if (data.api_key.startsWith('nga_')) { dashSessionKey = data.api_key; loadKeys(); }
+    }
+  } catch(e) { alert('Error rotating key.'); }
+}
+
+async function dashCreateKey() {
+  if (!dashSessionKey) return;
+  var label = prompt('Label for this key (optional):') || 'Key';
+  try {
+    var res = await fetch(API_BASE + '/v1/keys', { method: 'POST', headers: { 'X-API-Key': dashSessionKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ label: label }) });
+    var data = await res.json();
+    if (data.api_key) {
+      alert('New key created: ' + data.api_key + '\n\nSave it now — it won\'t be shown again.');
+      loadKeys();
+    }
+  } catch(e) { alert('Error creating key.'); }
+}
+
+async function dashResetAgent() {
+  if (!dashSessionKey) return;
+  if (!confirm('Clear all agent conversation history?')) return;
+  try {
+    var res = await fetch(API_BASE + '/v1/agent/reset', { method: 'POST', headers: { 'X-API-Key': dashSessionKey } });
+    var data = await res.json();
+    alert(data.message || 'Agent history cleared.');
+  } catch(e) { alert('Error clearing agent history.'); }
+}
 </script>
 </body>
 </html>
