@@ -1,5 +1,5 @@
 /**
- * NiceGuyAPI v5.2.1 - AI Agent Gateway with Custom Agents & Platinum Tier (Vercel Serverless)
+ * NiceGuyAPI v5.3.0 - AI Agent Gateway with Custom Agents & Stripe Live Payments
  *
  * OpenAI-compatible chat completions via OpenRouter.
  * 23+ AI models. Autonomous Agent with web search, fetch, calculator.
@@ -195,10 +195,10 @@ app.post('/v1/stripe/webhook', express.raw({type:'application/json'}), (req,res)
 app.use(express.json({limit:'1mb'})); app.use(cors()); app.use(helmet({contentSecurityPolicy:false}));
 
 // Health
-app.get('/health', (req,res) => res.status(200).json({ status:'ok', version:'5.2.1', timestamp:new Date().toISOString(), storage:process.env.JSONBLOB_ID?'persistent':'memory-only', agent:true, custom_agents:true, stripe:!!stripe }));
+app.get('/health', (req,res) => res.status(200).json({ status:'ok', version:'5.3.0', timestamp:new Date().toISOString(), storage:process.env.JSONBLOB_ID?'persistent':'memory-only', agent:true, custom_agents:true, stripe:!!stripe, stripe_mode:STRIPE_SECRET.startsWith('sk_live_')?'live':'test' }));
 
 // Root
-app.get('/', (req,res) => res.json({ name:'NiceGuyAPI', version:'5.2.1', description:'AI Model Gateway + Agent. Custom Agents. Stripe + key management. Platinum tier now available.', base_url:'/v1', pricing:{free:'$0/12req/75k',pro:'$6/40req/145k',premium:'$27/250req/315k',platinum:'$55/99999/750k'}, auth:'X-API-Key header', endpoints:['GET /health','POST /v1/signup','GET /v1/models','POST /v1/chat/completions','POST /v1/agent','GET /v1/usage','GET /v1/keys','POST /v1/keys','DELETE /v1/keys/:prefix','POST /v1/keys/:prefix/rotate','POST /v1/agent/reset','GET /v1/agents','POST /v1/agents','GET /v1/agents/:id','PUT /v1/agents/:id','DELETE /v1/agents/:id','POST /v1/agents/:id/reset'] }));
+app.get('/', (req,res) => res.json({ name:'NiceGuyAPI', version:'5.3.0', description:'AI Model Gateway + Agent. Custom Agents. Stripe + key management. Live payments enabled.', base_url:'/v1', pricing:{free:'$0/12req/75k',pro:'$6/40req/145k',premium:'$27/250req/315k',platinum:'$55/99999/750k'}, payments:STRIPE_SECRET.startsWith('sk_live_')?'live':'test', auth:'X-API-Key header', endpoints:['GET /health','POST /v1/signup','GET /v1/models','POST /v1/chat/completions','POST /v1/agent','GET /v1/usage','GET /v1/keys','POST /v1/keys','DELETE /v1/keys/:prefix','POST /v1/keys/:prefix/rotate','POST /v1/agent/reset','GET /v1/agents','POST /v1/agents','GET /v1/agents/:id','PUT /v1/agents/:id','DELETE /v1/agents/:id','POST /v1/agents/:id/reset'] }));
 
 // Signup
 app.post('/v1/signup', async (req,res) => {
