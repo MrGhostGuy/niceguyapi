@@ -256,9 +256,9 @@
       <div class="signup-row">
         <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
         <select id="plan">
-          <option value="free">Free — 14 req/mo — $0</option>
+          <option value="free">Free — 12 req/mo — $0</option>
           <option value="pro">Pro — 40 req/mo + Agent — $6/mo</option>
-          <option value="premium">Premium — 500 req/mo + Agent — $27/mo</option>`n          <option value="platinum">Platinum — Unlimited + 750K context — $55/mo</option>
+          <option value="premium">Premium — 250 req/mo + Agent — $27/mo</option>`n          <option value="platinum">Platinum — 99,999 req/mo + 750K context — $55/mo</option>
         </select>
         <button class="btn btn-primary" id="signup-btn" onclick="handleSignup()">Get Key</button>
       </div>
@@ -270,7 +270,7 @@
           <button class="copy-btn" onclick="copyKey()">Copy</button>
         </div>
         <p class="next-steps">This key is saved to your browser. Check email for a backup link.</p>
-        <p class="saved-note">Saved! Your key works immediately. Enjoy your free <span id="free-tier-req">14</span> requests this month.</p>
+        <p class="saved-note">Saved! Your key works immediately. Enjoy your free <span id="free-tier-req">12</span> requests this month.</p>
       </div>
     </div>
 
@@ -374,12 +374,12 @@
         <div class="feature-card">
           <div class="icon">🆓</div>
           <h3>Genuinely Free Tier</h3>
-          <p>14 free requests per month — no credit card. Try everything, no risk. Enough to chat and see what the API can do.</p>
+          <p>12 free requests per month — no credit card. Try everything, no risk. Enough to chat and see what the API can do.</p>
         </div>
         <div class="feature-card">
           <div class="icon">💰</div>
           <h3>Pricing That Makes Sense</h3>
-          <p>Pro at $6/mo for 40 requests. Premium at $27/mo for 500. Platinum at $55/mo for unmatched power with 750K context.</p>
+          <p>Pro at $6/mo for 40 requests. Premium at $27/mo for 250. Platinum at $55/mo for unmatched power with 750K context.</p>
         </div>
         <div class="feature-card">
           <div class="icon">⚡</div>
@@ -404,7 +404,7 @@
           <div class="tagline">Try it out — no commitment</div>
           <div class="price">$0<span>/mo</span></div>
           <ul>
-            <li>14 requests per month</li>
+            <li>12 requests per month</li>
             <li>23+ free AI models</li>
             <li>Rate limit: 5 req/min</li>
             <li>Save chat history</li>
@@ -432,10 +432,10 @@
         <div class="pricing-card premium-highlight">
           <h3>Premium</h3>
           <span class="discount-badge" style="background:rgba(251,191,36,0.15);color:#fbbf24;">45% OFF LAUNCH SALE</span>
-          <div class="tagline">⚡ 500 requests — for developers</div>
+          <div class="tagline">⚡ 250 requests — for developers</div>
           <div class="price"><span class="original">$49</span>$27<span>/mo</span></div>
           <ul>
-            <li>🔥 500 requests per month</li>
+            <li>🔥 250 requests per month</li>
             <li>ALL models including Claude, GPT-4o, Gemini</li>
             <li>Rate limit: 60 req/min</li>
             <li>🤖 Full Agent — search, fetch, calculate</li>
@@ -450,11 +450,11 @@
       </div>
         <div class="pricing-card" style="border-color:rgba(168,85,247,0.5);position:relative;">
           <h3>Platinum</h3>
-          <span class="discount-badge" style="background:rgba(168,85,247,0.2);color:#c084fc;">UNLIMITED POWER</span>
+          <span class="discount-badge" style="background:rgba(168,85,247,0.2);color:#c084fc;">MASSIVE SCALE</span>
           <div class="tagline">&#9734; Unlimited requests &mdash; 750K context</div>
           <div class="price">$55<span>/mo</span></div>
           <ul>
-            <li>&#9734; <strong>Unlimited requests</strong></li>
+            <li>&#9734; <strong>99,999 requests/mo</strong></li>
             <li>All Premium features included</li>
             <li>Rate limit: 120 req/min</li>
             <li>&#129302; Full Agent with all tools</li>
@@ -738,7 +738,7 @@ Premium Models (requires Premium plan — top-tier AI):
           <div class="faq-a">You need basic computer skills to use the API directly (we provide step-by-step instructions). But you can also use the <strong>Try Chat</strong> tab on this page to talk to AI without any coding at all. Just enter your email and start chatting.</div>
         </div>
         <div class="faq-item">
-          <div class="faq-q" onclick="toggleFaq(this)"><span>What does "14 requests per month" mean?</span><span class="arrow">▼</span></div>
+          <div class="faq-q" onclick="toggleFaq(this)"><span>What does "12 requests per month" mean?</span><span class="arrow">▼</span></div>
           <div class="faq-a">Each time you send a message to the AI, that is one request. The free plan gives you 14 messages per month. This is enough to try everything and see if NiceGuyAPI is right for you. For more, Pro gives 40 requests and Premium gives 500 per month.</div>
         </div>
         <div class="faq-item">
@@ -746,8 +746,8 @@ Premium Models (requires Premium plan — top-tier AI):
           <div class="faq-a">The AI Agent is an autonomous mode (Pro and Premium) that goes beyond simple chat. When you enable Agent mode, the AI can search the web for real-time information, fetch and read webpages, and perform calculations — all autonomously. You give it a goal, it figures out the steps. For example: "Find the latest news about AI and summarize it" — the agent searches, reads, and synthesizes automatically. It uses up to 5 LLM round-trips per request to plan and execute.</div>
         </div>
         <div class="faq-item">
-          <div class="faq-q" onclick="toggleFaq(this)"><span>Why does Premium have 500 requests?</span><span class="arrow">▼</span></div>
-          <div class="faq-a">Premium is built for developers and power users who integrate the API into apps, tools, and workflows. At 500 requests per month for $27, you get outstanding value — plus access to Claude, GPT-4o, Gemini, full Agent capabilities, and creation tools (images, songs, apps, games, and hosting).</div>
+          <div class="faq-q" onclick="toggleFaq(this)"><span>Why does Premium have 250 requests?</span><span class="arrow">▼</span></div>
+          <div class="faq-a">Premium is built for developers and power users who integrate the API into apps, tools, and workflows. At 250 requests per month for $27, you get outstanding value — plus access to Claude, GPT-4o, Gemini, full Agent capabilities, and creation tools (images, songs, apps, games, and hosting).</div>
         </div>
         <div class="faq-item">
           <div class="faq-q" onclick="toggleFaq(this)"><span>What is OpenClaw and how do I use it?</span><span class="arrow">▼</span></div>
@@ -759,7 +759,7 @@ Premium Models (requires Premium plan — top-tier AI):
         </div>
         <div class="faq-item">
           <div class="faq-q" onclick="toggleFaq(this)"><span>What happens when I run out of requests?</span><span class="arrow">▼</span></div>
-          <div class="faq-a">You will get a friendly error message when you hit your limit. You can either wait until your next billing cycle (resets monthly), or upgrade to a higher tier. Need no limits at all? Platinum gives you unlimited requests.</div>
+          <div class="faq-a">You will get a friendly error message when you hit your limit. You can either wait until your next billing cycle (resets monthly), or upgrade to a higher tier. Need no limits at all? Platinum gives you 99,999 requests.</div>
         </div>
         <div class="faq-item">
           <div class="faq-q" onclick="toggleFaq(this)"><span>What payment methods do you accept?</span><span class="arrow">▼</span></div>
@@ -771,7 +771,7 @@ Premium Models (requires Premium plan — top-tier AI):
         </div>
         <div class="faq-item">
           <div class="faq-q" onclick="toggleFaq(this)"><span>What is Platinum? Is it worth it?</span><span class="arrow">&#9660;</span></div>
-          <div class="faq-a">Platinum ($55/mo) is our ultimate tier for power users who need no limits. You get unlimited requests per month, the highest rate limits (120/min), and a massive 750K context window. If you are running an AI-powered business, building apps, or need the absolute best performance with no ceilings, Platinum is the one.</div>
+          <div class="faq-a">Platinum ($55/mo) is our ultimate tier for power users who need no limits. You get 99,999 requests per month, the highest rate limits (120/min), and a massive 750K context window. If you are running an AI-powered business, building apps, or need the absolute best performance with no ceilings, Platinum is the one.</div>
         </div>
         <div class="faq-item">
           <div class="faq-q" onclick="toggleFaq(this)"><span>Can I get a refund?</span><span class="arrow">▼</span></div>
@@ -987,7 +987,7 @@ async function sendChat(){
     var res=await fetch(API_BASE+'/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':chatKey},body:JSON.stringify(body)});
     typing.remove();
     if(res.status===403){addMessage('assistant','🤖 Agent mode requires Pro or Premium. Upgrade to unlock agent capabilities!');return;}
-    if(res.status===429){addMessage('assistant','⚠️ You have hit your monthly request limit! Upgrade to Pro (40 req/mo) or Premium (500 req/mo) for more.');return;}
+    if(res.status===429){addMessage('assistant','⚠️ You have hit your monthly request limit! Upgrade to Pro (40 req/mo) or Premium (250 req/mo) for more.');return;}
     var data=await res.json();
     var reply=(data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content)||(data.error&&data.error.message)||'Sorry, something went wrong. Try again.';
     addMessage('assistant',reply);

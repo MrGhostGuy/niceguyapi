@@ -30,10 +30,10 @@ if (STRIPE_SECRET) {
 }
 
 const TIERS = {
-  free:     { name:'Free',     price:0,   monthly_requests:14,    rate_limit_per_minute:5,   rate_limit_per_day:10,    max_tokens:75000,   context_size:75000,   agent:false, custom_agent:false },
+  free:     { name:'Free',     price:0,   monthly_requests:12,    rate_limit_per_minute:5,   rate_limit_per_day:10,    max_tokens:75000,   context_size:75000,   agent:false, custom_agent:false },
   pro:      { name:'Pro',      price:6,   monthly_requests:40,    rate_limit_per_minute:20,  rate_limit_per_day:200,   max_tokens:145000,  context_size:145000,  agent:true,  custom_agent:1 },
-  premium:  { name:'Premium',  price:27,  monthly_requests:500,   rate_limit_per_minute:60,  rate_limit_per_day:1000,  max_tokens:315000,  context_size:315000,  agent:true,  custom_agent:999 },
-  platinum: { name:'Platinum', price:55,  monthly_requests:999999, rate_limit_per_minute:120, rate_limit_per_day:10000, max_tokens:750000, context_size:750000, agent:true,  custom_agent:999, unlimited:true },
+  premium:  { name:'Premium',  price:27,  monthly_requests:250,   rate_limit_per_minute:60,  rate_limit_per_day:1000,  max_tokens:315000,  context_size:315000,  agent:true,  custom_agent:999 },
+  platinum: { name:'Platinum', price:55,  monthly_requests:99999,  rate_limit_per_minute:120, rate_limit_per_day:10000, max_tokens:750000, context_size:750000, agent:true,  custom_agent:999, unlimited:true },
 };
 
 function apiError(res, s, msg, type, extra) { return res.status(s).json({ error: { message: msg, type, ...(extra||{}) } }); }
