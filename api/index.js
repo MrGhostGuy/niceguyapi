@@ -1,5 +1,5 @@
 /**
- * NiceGuyAPI v5.1 - AI Agent Gateway with Custom Agents (Vercel Serverless)
+ * NiceGuyAPI v5.2 - AI Agent Gateway with Custom Agents & Platinum Tier (Vercel Serverless)
  *
  * OpenAI-compatible chat completions via OpenRouter.
  * 23+ AI models. Autonomous Agent with web search, fetch, calculator.
@@ -21,6 +21,7 @@ const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
 const STRIPE_PRO_PRICE = process.env.STRIPE_PRO_PRICE_ID || '';
 const STRIPE_PREMIUM_PRICE = process.env.STRIPE_PREMIUM_PRICE_ID || '';
+const STRIPE_PLATINUM_PRICE = process.env.STRIPE_PLATINUM_PRICE_ID || '';
 
 let stripe = null;
 if (STRIPE_SECRET) {
@@ -29,9 +30,10 @@ if (STRIPE_SECRET) {
 }
 
 const TIERS = {
-  free:     { name:'Free',     price:0,  monthly_requests:14,  rate_limit_per_minute:5,  rate_limit_per_day:10,   max_tokens:4096,  agent:false, custom_agent:false },
-  pro:      { name:'Pro',      price:6,  monthly_requests:40,  rate_limit_per_minute:20, rate_limit_per_day:200,  max_tokens:32768, agent:true,  custom_agent:1 },
-  premium:  { name:'Premium',  price:27, monthly_requests:500, rate_limit_per_minute:60, rate_limit_per_day:1000, max_tokens:131072, agent:true,  custom_agent:999 },
+  free:     { name:'Free',     price:0,   monthly_requests:14,    rate_limit_per_minute:5,   rate_limit_per_day:10,    max_tokens:75000,   context_size:75000,   agent:false, custom_agent:false },
+  pro:      { name:'Pro',      price:6,   monthly_requests:40,    rate_limit_per_minute:20,  rate_limit_per_day:200,   max_tokens:145000,  context_size:145000,  agent:true,  custom_agent:1 },
+  premium:  { name:'Premium',  price:27,  monthly_requests:500,   rate_limit_per_minute:60,  rate_limit_per_day:1000,  max_tokens:315000,  context_size:315000,  agent:true,  custom_agent:999 },
+  platinum: { name:'Platinum', price:55,  monthly_requests:999999, rate_limit_per_minute:120, rate_limit_per_day:10000, max_tokens:750000, context_size:750000, agent:true,  custom_agent:999, unlimited:true },
 };
 
 function apiError(res, s, msg, type, extra) { return res.status(s).json({ error: { message: msg, type, ...(extra||{}) } }); }
@@ -131,7 +133,7 @@ async function runAgent(messages, model, apiKey, agentId, histLimit) {
   for (let i=0; i<5; i++) {
     const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+OPENROUTER_KEY,'HTTP-Referer':'https://mrghostguy.github.io/niceguyapi/','X-Title':'NiceGuyAPI Agent'},
-      body:JSON.stringify({ model, messages:am, tools:AGENT_TOOLS, tool_choice:'auto', max_tokens:Math.min(apiKey.tier_config.max_tokens,8192) }),
+      body:JSON.stringify({ model, messages:am, tools:AGENT_TOOLS, tool_choice:'auto', max_tokens:Math.min(apiKey.tier_config.context_size, 32768) }),
     });
     if (!r.ok) return { error:true, status:r.status, body:await r.text() };
     const data = await r.json(), choice = data.choices?.[0];
@@ -193,10 +195,10 @@ app.post('/v1/stripe/webhook', express.raw({type:'application/json'}), (req,res)
 app.use(express.json({limit:'1mb'})); app.use(cors()); app.use(helmet({contentSecurityPolicy:false}));
 
 // Health
-app.get('/health', (req,res) => res.status(200).json({ status:'ok', version:'5.1.0', timestamp:new Date().toISOString(), storage:process.env.JSONBLOB_ID?'persistent':'memory-only', agent:true, custom_agents:true, stripe:!!stripe }));
+app.get('/health', (req,res) => res.status(200).json({ status:'ok', version:'5.2.0', timestamp:new Date().toISOString(), storage:process.env.JSONBLOB_ID?'persistent':'memory-only', agent:true, custom_agents:true, stripe:!!stripe }));
 
 // Root
-app.get('/', (req,res) => res.json({ name:'NiceGuyAPI', version:'5.1.0', description:'AI Model Gateway + Agent. Custom Agents. Stripe + key management.', base_url:'/v1', pricing:{free:'$0/14req',pro:'$6/40req',premium:'$27/500req'}, auth:'X-API-Key header', endpoints:['GET /health','POST /v1/signup','GET /v1/models','POST /v1/chat/completions','POST /v1/agent','GET /v1/usage','GET /v1/keys','POST /v1/keys','DELETE /v1/keys/:prefix','POST /v1/keys/:prefix/rotate','POST /v1/agent/reset','GET /v1/agents','POST /v1/agents','GET /v1/agents/:id','PUT /v1/agents/:id','DELETE /v1/agents/:id','POST /v1/agents/:id/reset'] }));
+app.get('/', (req,res) => res.json({ name:'NiceGuyAPI', version:'5.2.0', description:'AI Model Gateway + Agent. Custom Agents. Stripe + key management. Platinum tier now available.', base_url:'/v1', pricing:{free:'$0/14req/75k',pro:'$6/40req/145k',premium:'$27/500req/315k',platinum:'$55/unlimited/750k'}, auth:'X-API-Key header', endpoints:['GET /health','POST /v1/signup','GET /v1/models','POST /v1/chat/completions','POST /v1/agent','GET /v1/usage','GET /v1/keys','POST /v1/keys','DELETE /v1/keys/:prefix','POST /v1/keys/:prefix/rotate','POST /v1/agent/reset','GET /v1/agents','POST /v1/agents','GET /v1/agents/:id','PUT /v1/agents/:id','DELETE /v1/agents/:id','POST /v1/agents/:id/reset'] }));
 
 // Signup
 app.post('/v1/signup', async (req,res) => {
@@ -210,7 +212,7 @@ app.post('/v1/signup', async (req,res) => {
 
   // Stripe Checkout for paid tiers
   if (sel!=='free' && stripe) {
-    const priceId = sel==='pro' ? STRIPE_PRO_PRICE : STRIPE_PREMIUM_PRICE;
+    const priceId = sel==='pro' ? STRIPE_PRO_PRICE : (sel==='platinum' ? STRIPE_PLATINUM_PRICE : STRIPE_PREMIUM_PRICE);
     if (priceId) {
       try {
         const session = await stripe.checkout.sessions.create({
@@ -224,13 +226,13 @@ app.post('/v1/signup', async (req,res) => {
         db.billing[session.id] = { api_key_id:id, tier:sel, status:'pending', created_at:new Date().toISOString() };
         db.keys[id].pending_tier = sel; db.keys[id].tier = 'free'; db.keys[id].monthly_limit = TIERS.free.monthly_requests;
         await saveDb(db);
-        return res.status(201).json({ id, email, tier:'free', api_key:raw, monthly_limit:TIERS.free.monthly_requests, monthly_used:0, stripe_url:session.url, message:'Sign up complete! Complete payment to activate '+tc.name+'.', features:{agent:tc.agent,image:tc.image,song:tc.song,games:tc.games} });
+        return res.status(201).json({ id, email, tier:'free', api_key:raw, monthly_limit:TIERS.free.monthly_requests, monthly_used:0, context_size:tc.context_size, pending_tier:tc.name, stripe_url:session.url, message:'Sign up complete! Complete payment to activate '+tc.name+' with '+tc.context_size.toLocaleString()+' context.', features:{agent:tc.agent,image:tc.image,song:tc.song,games:tc.games} });
       } catch(e) { console.error('[NG] Stripe:', e.message); }
     }
   }
 
   await saveDb(db);
-  res.status(201).json({ id, email, tier:sel, api_key:raw, monthly_limit:tc.monthly_requests, monthly_used:0, features:{agent:tc.agent,image:tc.image,song:tc.song,games:tc.games}, message:tc.name+' API key ready!'+(tc.agent?' Agent included!':'') });
+  res.status(201).json({ id, email, tier:sel, api_key:raw, monthly_limit:tc.monthly_requests, monthly_used:0, context_size:tc.context_size, features:{agent:tc.agent,image:tc.image,song:tc.song,games:tc.games}, message:tc.name+' API key ready!'+(tc.agent?' Agent included!':'') + (tc.unlimited?' Unlimited requests!':'') });
 });
 
 // Auth
@@ -484,9 +486,11 @@ app.post('/v1/keys/:prefix/rotate', auth, async (req,res) => {
 // Usage
 app.get('/v1/usage', auth, (req,res) => {
   const k = req.apiKey, tc = TIERS[k.effective_tier], models = k.effective_tier==='free'?FREE_MODELS:[...FREE_MODELS,...PREMIUM_MODELS];
+  const isUnlimited = tc.unlimited || k.effective_limit >= 999999;
   res.json({
-    email:k.email, tier:k.effective_tier, monthly_limit:k.effective_limit, monthly_used:k.monthly_used,
-    monthly_remaining:Math.max(0,k.effective_limit-k.monthly_used), total_requests:k.total_requests||0,
+    email:k.email, tier:k.effective_tier, monthly_limit:isUnlimited?'unlimited':k.effective_limit, monthly_used:k.monthly_used,
+    monthly_remaining:isUnlimited?'unlimited':Math.max(0,k.effective_limit-k.monthly_used), total_requests:k.total_requests||0,
+    context_size:tc.context_size,
     features:{agent:tc.agent,custom_agent:tc.custom_agent,agent_tools:tc.agent?['web_search','web_fetch','calculate']:[],image:tc.image,song:tc.song,games:tc.games},
     rate_limit:{per_minute:tc.rate_limit_per_minute,per_day:tc.rate_limit_per_day}, available_models:models.length,
   });

@@ -97,6 +97,7 @@
     .chat-badge.free { background: rgba(99,102,241,0.2); color: #818cf8; }
     .chat-badge.pro { background: rgba(52,211,153,0.2); color: #34d399; }
     .chat-badge.premium { background: rgba(251,191,36,0.2); color: #fbbf24; }
+    .chat-badge.platinum { background: rgba(168,85,247,0.2); color: #c084fc; }
 
     /* ── SECTIONS ── */
     .section { padding: 50px 0; border-top: 1px solid rgba(255,255,255,0.06); }
@@ -121,7 +122,7 @@
     .feature-card p { font-size: 13px; color: #6b7280; line-height: 1.5; }
 
     /* ── PRICING ── */
-    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .pricing-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
     .pricing-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 28px; text-align: center; }
     .pricing-card.popular { border-color: #6366f1; position: relative; }
     .pricing-card.popular::before { content: 'MOST POPULAR'; position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: #6366f1; color: white; padding: 3px 14px; border-radius: 20px; font-size: 10px; font-weight: 700; }
@@ -257,7 +258,7 @@
         <select id="plan">
           <option value="free">Free — 14 req/mo — $0</option>
           <option value="pro">Pro — 40 req/mo + Agent — $6/mo</option>
-          <option value="premium">Premium — 500 req/mo + Agent — $27/mo</option>
+          <option value="premium">Premium — 500 req/mo + Agent — $27/mo</option>`n          <option value="platinum">Platinum — Unlimited + 750K context — $55/mo</option>
         </select>
         <button class="btn btn-primary" id="signup-btn" onclick="handleSignup()">Get Key</button>
       </div>
@@ -378,7 +379,7 @@
         <div class="feature-card">
           <div class="icon">💰</div>
           <h3>Pricing That Makes Sense</h3>
-          <p>Pro at $6/mo for 40 requests. Premium at $27/mo for 500 requests. The best value per request of any AI API gateway.</p>
+          <p>Pro at $6/mo for 40 requests. Premium at $27/mo for 500. Platinum at $55/mo for unmatched power with 750K context.</p>
         </div>
         <div class="feature-card">
           <div class="icon">⚡</div>
@@ -424,7 +425,7 @@
             <li>Song generation</li>
             <li>🤖 Agent mode — web search &amp; fetch</li>
             <li>Conversation memory (6 turns)</li>
-            <li>32K max tokens per request</li>
+            <li><strong>145K context window</strong></li>
           </ul>
           <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="document.getElementById('plan').value='pro';handleSignup()">Get Pro — $6/mo</button>
         </div>
@@ -442,11 +443,29 @@
             <li>Image + song generation</li>
             <li>App, game &amp; website creation</li>
             <li>Hosting included</li>
-            <li>131K max tokens per request</li>
+            <li><strong>315K context window</strong></li>
           </ul>
           <button class="btn btn-primary" style="width:100%;margin-top:8px;background:linear-gradient(135deg, #f59e0b, #d97706);" onclick="document.getElementById('plan').value='premium';handleSignup()">Get Premium — $27/mo</button>
         </div>
       </div>
+        <div class="pricing-card" style="border-color:rgba(168,85,247,0.5);position:relative;">
+          <h3>Platinum</h3>
+          <span class="discount-badge" style="background:rgba(168,85,247,0.2);color:#c084fc;">UNLIMITED POWER</span>
+          <div class="tagline">&#9734; Unlimited requests &mdash; 750K context</div>
+          <div class="price">$55<span>/mo</span></div>
+          <ul>
+            <li>&#9734; <strong>Unlimited requests</strong></li>
+            <li>All Premium features included</li>
+            <li>Rate limit: 120 req/min</li>
+            <li>&#129302; Full Agent with all tools</li>
+            <li>Massive agent memory</li>
+            <li>Custom agent creation (999)</li>
+            <li>Image + song + game + app generation</li>
+            <li>Priority routing</li>
+            <li><strong>750K context window</strong></li>
+          </ul>
+          <button class="btn btn-primary" style="width:100%;margin-top:8px;background:linear-gradient(135deg, #9333ea, #7c3aed);" onclick="document.getElementById('plan').value='platinum';handleSignup()">Get Platinum &mdash; $55/mo</button>
+        </div>
     </div>
 
     <!-- HOW IT WORKS -->
@@ -740,11 +759,19 @@ Premium Models (requires Premium plan — top-tier AI):
         </div>
         <div class="faq-item">
           <div class="faq-q" onclick="toggleFaq(this)"><span>What happens when I run out of requests?</span><span class="arrow">▼</span></div>
-          <div class="faq-a">You will get a friendly error message when you hit your limit. You can either wait until your next billing cycle (resets on the 1st of each month), or upgrade to a higher tier. Free users can also buy pay-as-you-go refills.</div>
+          <div class="faq-a">You will get a friendly error message when you hit your limit. You can either wait until your next billing cycle (resets monthly), or upgrade to a higher tier. Need no limits at all? Platinum gives you unlimited requests.</div>
         </div>
         <div class="faq-item">
           <div class="faq-q" onclick="toggleFaq(this)"><span>What payment methods do you accept?</span><span class="arrow">▼</span></div>
           <div class="faq-a">We accept all major credit and debit cards through Stripe. Payments are secure and automatic — cancel anytime with no penalties.</div>
+        </div>
+                <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)"><span>What are the context window sizes for each tier?</span><span class="arrow">&#9660;</span></div>
+          <div class="faq-a">Context window is how much text the AI can remember in a conversation. Free gets 75K, Pro gets 145K, Premium gets 315K, and Platinum gets a massive 750K context window &mdash; enough to process entire books, large codebases, or lengthy documents in a single conversation.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleFaq(this)"><span>What is Platinum? Is it worth it?</span><span class="arrow">&#9660;</span></div>
+          <div class="faq-a">Platinum ($55/mo) is our ultimate tier for power users who need no limits. You get unlimited requests per month, the highest rate limits (120/min), and a massive 750K context window. If you are running an AI-powered business, building apps, or need the absolute best performance with no ceilings, Platinum is the one.</div>
         </div>
         <div class="faq-item">
           <div class="faq-q" onclick="toggleFaq(this)"><span>Can I get a refund?</span><span class="arrow">▼</span></div>
@@ -803,7 +830,7 @@ Premium Models (requires Premium plan — top-tier AI):
 </div>
 
 <footer>
-  <p>⚡ NiceGuyAPI v5.0 — One API for Every AI Model + Autonomous Agent</p>
+  <p>⚡ NiceGuyAPI v5.2 — One API for Every AI Model + Autonomous Agent</p>
   <p style="margin-top:4px;">Powered by <a href="https://openrouter.ai" target="_blank">OpenRouter</a> | <a href="https://github.com/MrGhostGuy/stax-agent/tree/master/niceguyapi" target="_blank">GitHub</a></p>
 </footer>
 
@@ -845,7 +872,7 @@ async function handleSignup() {
       localStorage.setItem('niceguyapi_tier',data.tier||plan);
       document.getElementById('api-key').textContent=data.api_key;
       document.getElementById('key-result').style.display='block';
-      var tr={free:'14',pro:'40',premium:'500'};
+      var tr={free:'14',pro:'40',premium:'500',platinum:'Unlimited'};
       document.getElementById('free-tier-req').textContent=tr[plan]||'14';
       msg.innerHTML='<span class="success">Your key is ready! Save it above.</span>';
       if(data.stripe_url){window.location.href=data.stripe_url;}
@@ -893,7 +920,7 @@ function showChatUI(){
   document.getElementById('chat-container').style.display='block';
   var badge=document.getElementById('chat-tier-badge');
   badge.textContent=chatTier;
-  badge.className='chat-badge '+(chatTier==='Premium'?'premium':chatTier==='Pro'?'pro':'free');
+  badge.className='chat-badge '+(chatTier==='Platinum'?'platinum':chatTier==='Premium'?'premium':chatTier==='Pro'?'pro':'free');
   updateChatUsage();
   document.getElementById('chat-messages').innerHTML='';
   addMessage('assistant','Hi! I am your AI assistant powered by NiceGuyAPI. Ask me anything! Your messages count toward your free tier limit ('+chatUsage.total+' req/mo).');
