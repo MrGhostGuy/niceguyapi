@@ -1,5 +1,5 @@
 /**
- * NiceGuyAPI v5.3.0 - AI Agent Gateway with Custom Agents & Stripe Live Payments
+ * NiceGuyAPI v5.4.0 - AI Agent Gateway with Custom Agents & Stripe Live Payments
  *
  * OpenAI-compatible chat completions via OpenRouter.
  * 23+ AI models. Autonomous Agent with web search, fetch, calculator.

@@ -183,6 +183,44 @@
     footer a { color: #818cf8; text-decoration: none; }
     footer a:hover { text-decoration: underline; }
 
+    /* ── EXIT POPUP ── */
+    .exit-popup-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+    .exit-popup-overlay.show { display: flex; }
+    .exit-popup { background: #12121a; border: 1px solid rgba(99,102,241,0.3); border-radius: 20px; padding: 40px; max-width: 480px; text-align: center; position: relative; animation: popIn 0.3s ease; }
+    @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .exit-popup .close-btn { position: absolute; top: 16px; right: 20px; background: none; border: none; color: #6b7280; font-size: 20px; cursor: pointer; }
+    .exit-popup .close-btn:hover { color: #e8e8ec; }
+    .exit-popup h2 { font-size: 22px; font-weight: 700; color: #e8e8ec; margin-bottom: 8px; }
+    .exit-popup p { color: #9ca3af; font-size: 14px; margin-bottom: 20px; }
+    .exit-popup input[type="email"] { width: 100%; padding: 14px 18px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 10px; color: #e8e8ec; font-size: 15px; outline: none; margin-bottom: 12px; }
+    .exit-popup input[type="email"]:focus { border-color: #6366f1; }
+    .exit-popup .btn { width: 100%; }
+
+    /* ── COMPARISON TABLE ── */
+    .comparison-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    .comparison-table th, .comparison-table td { padding: 12px 16px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 13px; }
+    .comparison-table th { color: #9ca3af; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .comparison-table td:first-child { text-align: left; color: #d4d4de; }
+    .comparison-table tr:last-child td { border-bottom: none; }
+    .comparison-table .check { color: #34d399; font-weight: 700; }
+    .comparison-table .cross { color: #4b5563; }
+    .comparison-table .highlight-col { background: rgba(99,102,241,0.08); border-left: 2px solid #6366f1; border-right: 2px solid #6366f1; }
+    .comparison-table tr:first-child .highlight-col { border-top: 2px solid #6366f1; border-radius: 8px 8px 0 0; }
+    .comparison-table tr:last-child .highlight-col { border-bottom: 2px solid #6366f1; border-radius: 0 0 8px 8px; }
+
+    /* ── SOCIAL PROOF ── */
+    .social-proof { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 16px 0; flex-wrap: wrap; }
+    .social-proof .avatars { display: flex; }
+    .social-proof .avatars .avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6); border: 2px solid #08080c; margin-left: -8px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; font-weight: 700; }
+    .social-proof .avatars .avatar:first-child { margin-left: 0; }
+    .social-proof .proof-text { font-size: 13px; color: #9ca3af; }
+    .social-proof .proof-text strong { color: #e8e8ec; }
+
+    /* ── URGENCY BAR ── */
+    .urgency-bar { background: linear-gradient(135deg, rgba(239,68,68,0.1), rgba(251,191,36,0.1)); border: 1px solid rgba(239,68,68,0.2); border-radius: 12px; padding: 14px 20px; text-align: center; margin: 20px 0; }
+    .urgency-bar p { font-size: 14px; color: #fbbf24; font-weight: 600; }
+    .urgency-bar p span { color: #f87171; }
+
     /* ── MOBILE ── */
     @media (max-width: 768px) {
       .container { padding: 40px 16px; }
@@ -235,8 +273,10 @@
     <div class="hero">
       <div class="badge badge-green">● Live &amp; Ready — Now with AI Agent</div>
       <h1>One API. Every AI Model.<br><span style="font-size:28px;background:linear-gradient(135deg,#34d399,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">+ Autonomous Agent</span></h1>
-      <p>Chat with DeepSeek, Claude, GPT-4o, Gemini and 23+ more through a single endpoint. Agent mode searches the web, reads pages, and solves multi-step tasks. Try it free.</p>
-      <div style="margin-top:12px;"><span class="badge badge-amber">🔥 Launch Sale — Up to 50% Off — Limited Time</span></div>
+      <p>Stop managing 5 different API keys. Access DeepSeek, Claude, GPT-4o, Gemini and 23+ more through a single endpoint. Agent mode searches the web, reads pages, and solves multi-step tasks.</p>
+      <div class="urgency-bar">
+        <p>🔥 <span>Launch Sale:</span> Up to 50% off all paid tiers — limited time only</p>
+      </div>
       <div class="hero-badges">
         <span class="model-pill free">DeepSeek</span>
         <span class="model-pill free">Llama 3.3</span>
@@ -250,9 +290,20 @@
       </div>
     </div>
 
+    <div class="social-proof">
+      <div class="avatars">
+        <div class="avatar">J</div>
+        <div class="avatar">M</div>
+        <div class="avatar">S</div>
+        <div class="avatar">A</div>
+        <div class="avatar">K</div>
+      </div>
+      <div class="proof-text"><strong>Join developers</strong> already using NiceGuyAPI in their projects</div>
+    </div>
+
     <div class="signup-inline" id="signup">
-      <h2>Get Your Free API Key</h2>
-      <p class="sub">Start in seconds. No credit card required for free tier.</p>
+      <h2>Get Your Free API Key — 30 Seconds</h2>
+      <p class="sub">No credit card required. Instant access to 23+ AI models.</p>
       <div class="signup-row">
         <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
         <select id="plan">
@@ -391,6 +442,62 @@
           <h3>Secure by Default</h3>
           <p>API keys are bcrypt-hashed. HTTPS everywhere. Rate limiting protects your account. No data stored beyond usage counts.</p>
         </div>
+      </div>
+    </div>
+
+    <!-- COMPARISON -->
+    <div class="section">
+      <h2>Why Not Just Use OpenAI Directly?</h2>
+      <p class="sub">See how NiceGuyAPI compares to signing up for each provider individually.</p>
+      <div style="overflow-x:auto;">
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>OpenAI&nbsp;Direct</th>
+            <th>Anthropic&nbsp;Direct</th>
+            <th class="highlight-col">⚡ NiceGuyAPI</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>API Keys to Manage</td>
+            <td>1</td><td>1</td>
+            <td class="highlight-col check">1 (all models)</td>
+          </tr>
+          <tr>
+            <td>Models Available</td>
+            <td>GPT only</td><td>Claude only</td>
+            <td class="highlight-col check">23+ models</td>
+          </tr>
+          <tr></tr>
+          <tr>
+            <td>Separate Billing</td>
+            <td><span class="check">$20+/mo</span></td><td><span class="check">$20+/mo</span></td>
+            <td class="highlight-col" style="color:#34d399;font-weight:600">From $0</td>
+          </tr>
+          <tr>
+            <td>Free Tier</td>
+            <td class="cross">✗ Limited</td><td class="cross">✗ None</td>
+            <td class="highlight-col check">12 req/mo, no CC</td>
+          </tr>
+          <tr>
+            <td>Agent Mode (web search)</td>
+            <td class="cross">✗ Extra cost</td><td class="cross">✗ Extra cost</td>
+            <td class="highlight-col check">Included Pro+</td>
+          </tr>
+          <tr>
+            <td>Context Window</td>
+            <td>128K</td><td>200K</td>
+            <td class="highlight-col check">Up to 750K</td>
+          </tr>
+          <tr>
+            <td>Switch Models in Code</td>
+            <td class="cross">Different API</td><td class="cross">Different API</td>
+            <td class="highlight-col check">Change one string</td>
+          </tr>
+        </tbody>
+      </table>
       </div>
     </div>
 
@@ -837,9 +944,22 @@ Premium Models (requires Premium plan — top-tier AI):
 </div>
 
 <footer>
-  <p>⚡ NiceGuyAPI v5.3 — One API for Every AI Model + Autonomous Agent | bit.ly/NiceGuyAPI</p>
+  <p>⚡ NiceGuyAPI v5.4 — One API for Every AI Model + Autonomous Agent | bit.ly/NiceGuyAPI</p>
   <p style="margin-top:4px;">Powered by <a href="https://openrouter.ai" target="_blank">OpenRouter</a> | <a href="https://github.com/MrGhostGuy/stax-agent/tree/master/niceguyapi" target="_blank">GitHub</a></p>
 </footer>
+
+<!-- EXIT INTENT POPUP -->
+<div class="exit-popup-overlay" id="exit-popup">
+  <div class="exit-popup">
+    <button class="close-btn" onclick="closeExitPopup()">✕</button>
+    <div style="font-size:40px;margin-bottom:12px;">🎁</div>
+    <h2>Wait — Get a Free API Key</h2>
+    <p>Before you go, grab your free API key. 12 requests/month, no credit card, instant access to 23+ AI models.</p>
+    <input type="email" id="exit-email" placeholder="you@example.com" autocomplete="email">
+    <button class="btn btn-primary" id="exit-btn" onclick="handleExitSignup()">Get My Free Key →</button>
+    <p style="margin-top:12px;font-size:12px;color:#4b5563;">No spam. Just your API key.</p>
+  </div>
+</div>
 
 <script>
 var API_BASE = 'https://niceguyapi-repo.vercel.app';
@@ -1130,6 +1250,81 @@ async function dashResetAgent() {
     var data = await res.json();
     alert(data.message || 'Agent history cleared.');
   } catch(e) { alert('Error clearing agent history.'); }
+}
+
+// ── EXIT INTENT POPUP ──
+var exitPopupShown = false;
+var exitPopupEnabled = true;
+
+// Show popup when mouse leaves viewport (desktop)
+document.addEventListener('mouseleave', function(e) {
+  if (e.clientY < 10 && !exitPopupShown && exitPopupEnabled) {
+    showExitPopup();
+  }
+});
+
+// Show popup on mobile when scrolling back up quickly
+var lastScrollY = 0;
+var scrollUpCount = 0;
+window.addEventListener('scroll', function() {
+  if (window.innerWidth > 768) return;
+  var currentY = window.scrollY;
+  if (currentY < lastScrollY - 100) {
+    scrollUpCount++;
+    if (scrollUpCount > 3 && !exitPopupShown && exitPopupEnabled) {
+      showExitPopup();
+    }
+  } else if (currentY > lastScrollY + 50) {
+    scrollUpCount = 0;
+  }
+  lastScrollY = currentY;
+});
+
+function showExitPopup() {
+  if (localStorage.getItem('niceguyapi_key')) return; // already signed up
+  exitPopupShown = true;
+  document.getElementById('exit-popup').classList.add('show');
+}
+
+function closeExitPopup() {
+  document.getElementById('exit-popup').classList.remove('show');
+  exitPopupEnabled = false; // don't show again this session
+}
+
+async function handleExitSignup() {
+  var email = document.getElementById('exit-email').value.trim();
+  var btn = document.getElementById('exit-btn');
+  if (!email || !email.includes('@')) {
+    alert('Please enter a valid email.');
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Creating key...';
+  try {
+    var res = await fetch(API_BASE + '/v1/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, tier: 'free' })
+    });
+    var data = await res.json();
+    if (res.ok && data.api_key) {
+      localStorage.setItem('niceguyapi_key', data.api_key);
+      localStorage.setItem('niceguyapi_email', email);
+      closeExitPopup();
+      // Show success on main page
+      document.getElementById('api-key').textContent = data.api_key;
+      document.getElementById('key-result').style.display = 'block';
+      document.getElementById('signup-msg').innerHTML = '<span class="success">Your key is ready! Save it above.</span>';
+      showTab('home');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      alert(data.error?.message || 'Something went wrong. Try again.');
+    }
+  } catch(err) {
+    alert('Connection error. Try again.');
+  }
+  btn.disabled = false;
+  btn.textContent = 'Get My Free Key →';
 }
 </script>
 </body>
