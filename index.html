@@ -608,7 +608,7 @@ curl https://niceguyapi-repo.vercel.app/v1/chat/completions <span class="k">\</s
   -H <span class="s">"Content-Type: application/json"</span> <span class="k">\</span>
   -H <span class="s">"X-API-Key: nga_live_..."</span> <span class="k">\</span>
   -d <span class="s">'{
-    "model": "deepseek/deepseek-v4-flash:free",
+    "model": "deepseek/deepseek-v3-0324:free",
     "messages": [{"role": "user", "content": "Hello!"}]
   }'</span>
 
@@ -742,7 +742,7 @@ curl https://niceguyapi-repo.vercel.app/v1/chat/completions \
           <div class="code-block">curl https://niceguyapi-repo.vercel.app/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "X-API-Key: nga_live_YOUR_KEY" \
-  -d '{"model":"deepseek/deepseek-v4-flash:free","messages":[{"role":"user","content":"Say hello!"}]}'</div>
+  -d '{"model":"deepseek/deepseek-v3-0324:free","messages":[{"role":"user","content":"Say hello!"}]}'</div>
           <p>You should get a JSON response with "Hello!" from the AI. If you do — everything is working perfectly.</p>
         </div>
         <div class="guide-card">
@@ -761,7 +761,7 @@ while True:
         break
     res = requests.post(f"{BASE_URL}/v1/chat/completions",
         headers={"X-API-Key": API_KEY},
-        json={"model": "deepseek/deepseek-v4-flash:free",
+        json={"model": "deepseek/deepseek-v3-0324:free",
               "messages": [{"role": "user", "content": msg}]})
     data = res.json()
     print("AI:", data["choices"][0]["message"]["content"])</div>
@@ -777,7 +777,7 @@ npm install -g openclaw
 # Set your NiceGuyAPI key as the model provider
 openclaw config set model.baseUrl https://niceguyapi-repo.vercel.app/v1
 openclaw config set model.apiKey nga_live_YOUR_KEY
-openclaw config set model.name deepseek/deepseek-v4-flash:free
+openclaw config set model.name deepseek/deepseek-v3-0324:free
 
 # Start OpenClaw
 openclaw start</div>
@@ -824,7 +824,7 @@ Premium Models (requires Premium plan — top-tier AI):
   • anthropic/claude-sonnet-4-20250514 — Best overall AI
   • openai/gpt-4o — Great for creative tasks
   • google/gemini-2.0-flash — Fast and capable</div>
-          <div class="tip">💡 Start with <strong>deepseek/deepseek-v4-flash:free</strong>. It is fast, smart, and free. Switch models if you need something specific.</div>
+          <div class="tip">💡 Start with <strong>deepseek/deepseek-v3-0324:free</strong>. It is fast, smart, and free. Switch models if you need something specific.</div>
         </div>
       </div>
     </div>
@@ -966,22 +966,26 @@ Premium Models (requires Premium plan — top-tier AI):
 var API_BASE = 'https://niceguyapi-repo.vercel.app';
 
 function showTab(name) {
-  ['home','chat','guide','faq','dash'].forEach(function(t){
-    var c = document.getElementById('content-'+t);
-    var b = document.getElementById('tab-'+t);
-    if(c) c.className = 'tab-content' + (t===name?' active':'');
-    if(b) b.className = 'nav-tab' + (t===name?' active':'');
-  });
-  window.scrollTo({top:0,behavior:'smooth'});
+  var tabs = ['home', 'chat', 'guide', 'faq', 'dash'];
+  for (var i = 0; i < tabs.length; i++) {
+    var t = tabs[i];
+    var c = document.getElementById('content-' + t);
+    var b = document.getElementById('tab-' + t);
+    if (c) c.className = 'tab-content' + (t === name ? ' active' : '');
+    if (b) b.className = 'nav-tab' + (t === name ? ' active' : '');
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function toggleFaq(el) {
   var arrow = el.querySelector('.arrow');
   var ans = el.nextElementSibling;
   var isOpen = ans.classList.contains('open');
-  document.querySelectorAll('.faq-a').forEach(function(a){a.classList.remove('open');});
-  document.querySelectorAll('.faq-q .arrow').forEach(function(a){a.classList.remove('open');});
-  if(!isOpen){ans.classList.add('open');arrow.classList.add('open');}
+  var allAns = document.querySelectorAll('.faq-a');
+  for (var i = 0; i < allAns.length; i++) allAns[i].classList.remove('open');
+  var allArrows = document.querySelectorAll('.faq-q .arrow');
+  for (var i = 0; i < allArrows.length; i++) allArrows[i].classList.remove('open');
+  if (!isOpen) { ans.classList.add('open'); arrow.classList.add('open'); }
 }
 
 async function handleSignup() {
@@ -989,167 +993,152 @@ async function handleSignup() {
   var plan = document.getElementById('plan').value;
   var msg = document.getElementById('signup-msg');
   var btn = document.getElementById('signup-btn');
-  if(!email || !email.includes('@')){msg.innerHTML='<span class="error">Please enter a valid email.</span>';return;}
-  btn.disabled=true;btn.textContent='Creating key...';msg.innerHTML='';
-  try{
-    var res = await fetch(API_BASE+'/v1/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,tier:plan})});
+  if (!email || email.indexOf('@') < 0) { msg.innerHTML = '<span class="error">Please enter a valid email.</span>'; return; }
+  btn.disabled = true; btn.textContent = 'Creating key...'; msg.innerHTML = '';
+  try {
+    var res = await fetch(API_BASE + '/v1/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email, tier: plan }) });
     var data = await res.json();
-    if(res.ok && data.api_key){
-      localStorage.setItem('niceguyapi_key',data.api_key);
-      localStorage.setItem('niceguyapi_email',email);
-      localStorage.setItem('niceguyapi_tier',data.tier||plan);
-      document.getElementById('api-key').textContent=data.api_key;
-      document.getElementById('key-result').style.display='block';
-      var tr={free:'14',pro:'40',premium:'500',platinum:'Unlimited'};
-      document.getElementById('free-tier-req').textContent=tr[plan]||'14';
-      msg.innerHTML='<span class="success">Your key is ready! Save it above.</span>';
-      if(data.stripe_url){window.location.href=data.stripe_url;}
-    }else{
-      msg.innerHTML='<span class="error">'+(data.error?.message||'Something went wrong. Try again.')+'</span>';
+    if (res.ok && data.api_key) {
+      localStorage.setItem('niceguyapi_key', data.api_key);
+      localStorage.setItem('niceguyapi_email', email);
+      localStorage.setItem('niceguyapi_tier', data.tier || plan);
+      document.getElementById('api-key').textContent = data.api_key;
+      document.getElementById('key-result').style.display = 'block';
+      var tr = { free: '14', pro: '40', premium: '500', platinum: 'Unlimited' };
+      document.getElementById('free-tier-req').textContent = tr[plan] || '14';
+      msg.innerHTML = '<span class="success">Your key is ready! Save it above.</span>';
+      if (data.stripe_url) { window.location.href = data.stripe_url; }
+    } else {
+      msg.innerHTML = '<span class="error">' + (data.error && data.error.message || 'Something went wrong. Try again.') + '</span>';
     }
-  }catch(err){
-    msg.innerHTML='<span class="error">Connection error. Server may be waking up. Try again in 30 seconds.</span>';
+  } catch (err) {
+    msg.innerHTML = '<span class="error">Connection error. Server may be waking up. Try again in 30 seconds.</span>';
   }
-  btn.disabled=false;btn.textContent='Get Key';
+  btn.disabled = false; btn.textContent = 'Get Key';
 }
 
-function copyKey(){
-  var key=document.getElementById('api-key').textContent;
-  navigator.clipboard.writeText(key).then(function(){
-    var btn=document.querySelector('.key-result .copy-btn');
-    btn.textContent='Copied!';setTimeout(function(){btn.textContent='Copy';},2000);
+function copyKey(key) {
+  if (!key) key = document.getElementById('api-key').textContent;
+  navigator.clipboard.writeText(key).then(function () {
+    alert('Copied to clipboard!');
   });
 }
 
-var chatKey=null,chatTier='Free',chatUsage={used:0,total:14},chatAgent=false;
+// Chat
+var chatKey = null, chatTier = 'Free', chatUsage = { used: 0, total: 14 }, chatAgent = false;
 
-async function startChat(){
-  var email=document.getElementById('chat-email').value.trim();
-  var gateMsg=document.getElementById('chat-gate-msg');
-  var btn=document.getElementById('chat-start-btn');
-  if(!email||!email.includes('@')){gateMsg.innerHTML='Please enter a valid email.';return;}
-  btn.disabled=true;btn.textContent='Setting up...';gateMsg.innerHTML='';
-  try{
-    var res=await fetch(API_BASE+'/v1/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,tier:'free'})});
-    var data=await res.json();
-    if(res.ok&&data.api_key){
-      chatKey=data.api_key;chatTier=data.tier||'Free';chatUsage={used:0,total:14};chatAgent=false;
-      localStorage.setItem('niceguyapi_chat',JSON.stringify({key:chatKey,email:email,tier:chatTier,used:0}));
+async function startChat() {
+  var email = document.getElementById('chat-email').value.trim();
+  var gateMsg = document.getElementById('chat-gate-msg');
+  var btn = document.getElementById('chat-start-btn');
+  if (!email || email.indexOf('@') < 0) { gateMsg.innerHTML = 'Please enter a valid email.'; return; }
+  btn.disabled = true; btn.textContent = 'Setting up...'; gateMsg.innerHTML = '';
+  try {
+    var res = await fetch(API_BASE + '/v1/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email, tier: 'free' }) });
+    var data = await res.json();
+    if (res.ok && data.api_key) {
+      chatKey = data.api_key; chatTier = data.tier || 'Free'; chatUsage = { used: 0, total: 14 }; chatAgent = false;
+      localStorage.setItem('niceguyapi_chat', JSON.stringify({ key: chatKey, email: email, tier: chatTier, used: 0 }));
       showChatUI();
-    }else{
-      gateMsg.innerHTML=(data.error?.message||'Something went wrong. Try again.')+'<br><small>If you signed up already, check your email for your API key.</small>';
+    } else {
+      gateMsg.innerHTML = (data.error && data.error.message || 'Something went wrong. Try again.') + '<br><small>If you signed up already, check your email for your API key.</small>';
     }
-  }catch(err){gateMsg.innerHTML='Connection error. Server may be waking up. Try again in 30 seconds.';}
-  btn.disabled=false;btn.textContent='Start Chatting →';
+  } catch (err) { gateMsg.innerHTML = 'Connection error. Server may be waking up. Try again in 30 seconds.'; }
+  btn.disabled = false; btn.textContent = 'Start Chatting \u2192';
 }
 
-function showChatUI(){
-  document.getElementById('chat-gate').style.display='none';
-  document.getElementById('chat-container').style.display='block';
-  var badge=document.getElementById('chat-tier-badge');
-  badge.textContent=chatTier;
-  badge.className='chat-badge '+(chatTier==='Platinum'?'platinum':chatTier==='Premium'?'premium':chatTier==='Pro'?'pro':'free');
+function showChatUI() {
+  document.getElementById('chat-gate').style.display = 'none';
+  document.getElementById('chat-container').style.display = 'block';
+  var badge = document.getElementById('chat-tier-badge');
+  badge.textContent = chatTier;
+  badge.className = 'chat-badge ' + (chatTier === 'Platinum' ? 'platinum' : chatTier === 'Premium' ? 'premium' : chatTier === 'Pro' ? 'pro' : 'free');
   updateChatUsage();
-  document.getElementById('chat-messages').innerHTML='';
-  addMessage('assistant','Hi! I am your AI assistant powered by NiceGuyAPI. Ask me anything! Your messages count toward your free tier limit ('+chatUsage.total+' req/mo).');
+  document.getElementById('chat-messages').innerHTML = '';
+  addMessage('assistant', 'Hi! I am your AI assistant powered by NiceGuyAPI. Ask me anything!');
 }
 
-function updateChatUsage(){
-  document.getElementById('chat-usage').textContent=chatUsage.used+'/'+chatUsage.total+' requests used';
+function updateChatUsage() {
+  document.getElementById('chat-usage').textContent = chatUsage.used + '/' + chatUsage.total + ' requests used';
 }
 
-function resetChat(){
+function resetChat() {
   localStorage.removeItem('niceguyapi_chat');
-  chatKey=null;chatTier='Free';chatUsage={used:0,total:14};
-  document.getElementById('chat-gate').style.display='block';
-  document.getElementById('chat-container').style.display='none';
-  document.getElementById('chat-email').value='';
-  document.getElementById('chat-gate-msg').innerHTML='';
-  document.getElementById('chat-start-btn').disabled=false;
-  document.getElementById('chat-start-btn').textContent='Start Chatting →';
+  chatKey = null; chatTier = 'Free'; chatUsage = { used: 0, total: 14 };
+  document.getElementById('chat-gate').style.display = 'block';
+  document.getElementById('chat-container').style.display = 'none';
+  document.getElementById('chat-email').value = '';
+  document.getElementById('chat-gate-msg').innerHTML = '';
+  document.getElementById('chat-start-btn').disabled = false;
+  document.getElementById('chat-start-btn').textContent = 'Start Chatting \u2192';
 }
 
-function addMessage(role,text){
-  var container=document.getElementById('chat-messages');
-  var div=document.createElement('div');
-  div.className='chat-msg '+role;
-  var avatar=role==='user'?'👤':'🤖';
-  div.innerHTML='<div class="avatar">'+avatar+'</div><div class="bubble">'+text.replace(/\n/g,'<br>')+'</div>';
+function addMessage(role, text) {
+  var container = document.getElementById('chat-messages');
+  var div = document.createElement('div');
+  div.className = 'chat-msg ' + role;
+  var avatar = role === 'user' ? '\uD83D\uDC64' : '\uD83E\uDD16';
+  div.innerHTML = '<div class="avatar">' + avatar + '</div><div class="bubble">' + text.replace(/\n/g, '<br>') + '</div>';
   container.appendChild(div);
-  container.scrollTop=container.scrollHeight;
+  container.scrollTop = container.scrollHeight;
 }
 
-function addToolCall(toolName,args,result){
-  var container=document.getElementById('chat-messages');
-  var div=document.createElement('div');
-  div.className='chat-msg assistant';
-  var summary=toolName+'('+(args.query||args.url||args.expression||'')+')';
-  var body='<strong>🔧 '+toolName+'</strong><br><code style="font-size:11px;color:#9ca3af;">'+summary+'</code>';
-  if(result)body+='<br><span style="font-size:13px;">'+result.substring(0,300).replace(/\n/g,' ')+(result.length>300?'...':'')+'</span>';
-  div.innerHTML='<div class="avatar">🔧</div><div class="bubble" style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.15);">'+body+'</div>';
-  container.appendChild(div);
-  container.scrollTop=container.scrollHeight;
+function toggleAgent() {
+  chatAgent = document.getElementById('agent-toggle').checked;
+  if (chatAgent) addMessage('assistant', '\uD83E\uDD16 Agent mode enabled! I can now search the web, read webpages, and do calculations.');
 }
 
-function toggleAgent(){
-  chatAgent=document.getElementById('agent-toggle').checked;
-  if(chatAgent){
-    addMessage('assistant','🤖 Agent mode enabled! I can now search the web, read webpages, and do calculations. Ask me something that needs real-time info!');
-  }
-}
-
-async function sendChat(){
-  var input=document.getElementById('chat-input');
-  var btn=document.getElementById('chat-send-btn');
-  var text=input.value.trim();
-  if(!text||!chatKey)return;
-  addMessage('user',text);input.value='';btn.disabled=true;btn.textContent='...';
-  var container=document.getElementById('chat-messages');
-  var typing=document.createElement('div');
-  typing.className='chat-msg assistant';typing.id='typing-indicator';
-  typing.innerHTML='<div class="avatar">🤖</div><div class="bubble typing">'+(chatAgent?'Planning...':'Thinking...')+'</div>';
-  container.appendChild(typing);container.scrollTop=container.scrollHeight;
-  try{
-    var body={model:chatAgent?'openai/gpt-oss-120b:free':'deepseek/deepseek-v4-flash:free',messages:[{role:'user',content:text}]};
-    if(chatAgent)body.agent=true;
-    var res=await fetch(API_BASE+'/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','X-API-Key':chatKey},body:JSON.stringify(body)});
+async function sendChat() {
+  var input = document.getElementById('chat-input');
+  var btn = document.getElementById('chat-send-btn');
+  var text = input.value.trim();
+  if (!text || !chatKey) return;
+  addMessage('user', text); input.value = ''; btn.disabled = true; btn.textContent = '...';
+  var container = document.getElementById('chat-messages');
+  var typing = document.createElement('div');
+  typing.className = 'chat-msg assistant'; typing.id = 'typing-indicator';
+  typing.innerHTML = '<div class="avatar">\uD83E\uDD16</div><div class="bubble typing">' + (chatAgent ? 'Planning...' : 'Thinking...') + '</div>';
+  container.appendChild(typing); container.scrollTop = container.scrollHeight;
+  try {
+    var body = { model: chatAgent ? 'openai/gpt-oss-120b:free' : 'openai/gpt-oss-120b:free', messages: [{ role: 'user', content: text }] };
+    if (chatAgent) body.agent = true;
+    var res = await fetch(API_BASE + '/v1/chat/completions', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-API-Key': chatKey }, body: JSON.stringify(body) });
     typing.remove();
-    if(res.status===403){addMessage('assistant','🤖 Agent mode requires Pro or Premium. Upgrade to unlock agent capabilities!');return;}
-    if(res.status===429){addMessage('assistant','⚠️ You have hit your monthly request limit! Upgrade to Pro (40 req/mo) or Premium (250 req/mo) for more.');return;}
-    var data=await res.json();
-    var reply=(data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content)||(data.error&&data.error.message)||'Sorry, something went wrong. Try again.';
-    addMessage('assistant',reply);
-    chatUsage.used++;updateChatUsage();
-    var saved=localStorage.getItem('niceguyapi_chat');
-    if(saved){var obj=JSON.parse(saved);obj.used=chatUsage.used;localStorage.setItem('niceguyapi_chat',JSON.stringify(obj));}
-  }catch(err){typing.remove();addMessage('assistant','Connection error. The server may be waking up. Try again in a moment.');}
-  btn.disabled=false;btn.textContent='Send';input.focus();
+    if (res.status === 403) { addMessage('assistant', '\uD83E\uDD16 Agent mode requires Pro or Premium. Upgrade to unlock agent capabilities!'); return; }
+    if (res.status === 429) { addMessage('assistant', '\u26A0\uFE0F You have hit your monthly request limit! Upgrade for more.'); return; }
+    var data = await res.json();
+    var reply = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || (data.error && data.error.message) || 'Sorry, something went wrong. Try again.';
+    addMessage('assistant', reply);
+    chatUsage.used++; updateChatUsage();
+    var saved = localStorage.getItem('niceguyapi_chat');
+    if (saved) { var obj = JSON.parse(saved); obj.used = chatUsage.used; localStorage.setItem('niceguyapi_chat', JSON.stringify(obj)); }
+  } catch (err) { typing.remove(); addMessage('assistant', 'Connection error. The server may be waking up. Try again in a moment.'); }
+  btn.disabled = false; btn.textContent = 'Send'; input.focus();
 }
 
-(function(){
-  var saved=localStorage.getItem('niceguyapi_chat');
-  if(saved){try{var obj=JSON.parse(saved);if(obj.key){chatKey=obj.key;chatTier=obj.tier||'Free';chatUsage.used=obj.used||0;showChatUI();}}catch(e){}}
+// Restore chat session
+(function () {
+  var saved = localStorage.getItem('niceguyapi_chat');
+  if (saved) { try { var obj = JSON.parse(saved); if (obj.key) { chatKey = obj.key; chatTier = obj.tier || 'Free'; chatUsage.used = obj.used || 0; showChatUI(); } } catch (e) { } }
 })();
 
+// URL params
 var urlParams = new URLSearchParams(window.location.search);
-if(urlParams.get('canceled')==='true'){
-  document.getElementById('signup-msg').innerHTML='<span style="color:#fbbf24;">Payment canceled. You can try again anytime.</span>;
+if (urlParams.get('canceled') === 'true') {
+  document.getElementById('signup-msg').innerHTML = '<span style="color:#fbbf24;">Payment canceled. You can try again anytime.</span>';
 }
-if(window.location.hash==='#success' || urlParams.get('success')==='true'){
-  document.getElementById('signup').style.display='none';
-  var sb=document.getElementById('success-box');if(sb)sb.style.display='block';
-  document.getElementById('signup-msg').innerHTML='<span class="success">?? Payment successful! Your account has been upgraded.</span>';
+if (window.location.hash === '#success' || urlParams.get('success') === 'true') {
+  document.getElementById('signup').style.display = 'none';
+  var sb = document.getElementById('success-box'); if (sb) sb.style.display = 'block';
+  document.getElementById('signup-msg').innerHTML = '<span class="success">Payment successful! Your account has been upgraded.</span>';
 }
-// Enter to submit
-document.getElementById('email').addEventListener('keydown',function(e){if(e.key==='Enter')handleSignup();});
-var ce=document.getElementById('chat-email');if(ce)ce.addEventListener('keydown',function(e){if(e.key==='Enter')startChat();});
-var ci=document.getElementById('chat-input');if(ci)ci.addEventListener('keydown',function(e){if(e.key==='Enter')sendChat();});
-// QOL: Copy key button
-function copyKey(key){navigator.clipboard.writeText(key).then(function(){alert('Copied to clipboard!');});}
-// QOL: Dashboard enter key
-document.addEventListener('DOMContentLoaded',function(){var dk=document.getElementById('dash-key-input');if(dk)dk.addEventListener('keydown',function(e){if(e.key==='Enter')dashLogin();});});
 
-// Dashboard functions
+// Enter key handlers
+document.getElementById('email').addEventListener('keydown', function (e) { if (e.key === 'Enter') handleSignup(); });
+var ce = document.getElementById('chat-email'); if (ce) ce.addEventListener('keydown', function (e) { if (e.key === 'Enter') startChat(); });
+var ci = document.getElementById('chat-input'); if (ci) ci.addEventListener('keydown', function (e) { if (e.key === 'Enter') sendChat(); });
+
+// Dashboard
 var dashSessionKey = null;
 var dashSessionEmail = null;
 
@@ -1161,40 +1150,35 @@ async function dashLogin() {
     var res = await fetch(API_BASE + '/v1/usage', { headers: { 'X-API-Key': keyInput } });
     var data = await res.json();
     if (res.ok && data.email) {
-      dashSessionKey = keyInput;
-      dashSessionEmail = data.email;
+      dashSessionKey = keyInput; dashSessionEmail = data.email;
       document.getElementById('dash-gate').style.display = 'none';
       document.getElementById('dash-content').style.display = 'block';
       renderDashboard(data);
       loadKeys();
     } else {
-      msg.innerHTML = '<span style="color:#f87171;">' + (data.error?.message || 'Invalid API key. Please check and try again.') + '</span>';
+      msg.innerHTML = '<span style="color:#f87171;">' + (data.error && data.error.message || 'Invalid API key.') + '</span>';
     }
-  } catch(err) {
-    msg.innerHTML = '<span style="color:#f87171;">Connection error. Try again.</span>';
-  }
+  } catch (err) { msg.innerHTML = '<span style="color:#f87171;">Connection error. Try again.</span>'; }
 }
 
 function renderDashboard(data) {
   document.getElementById('dash-tier').textContent = data.tier.charAt(0).toUpperCase() + data.tier.slice(1);
   var badge = document.getElementById('dash-tier-badge');
-  badge.textContent = data.tier.toUpperCase();
-  var tierColors = { free: ['rgba(99,102,241,0.2)','#818cf8'], pro: ['rgba(52,211,153,0.2)','#34d399'], premium: ['rgba(251,191,36,0.2)','#fbbf24'], platinum: ['rgba(168,85,247,0.2)','#c084fc'] };
-  var tc = tierColors[data.tier] || tierColors.free;
-  badge.style.background = tc[0]; badge.style.color = tc[1];
+  var colors = { free: ['rgba(99,102,241,0.2)', '#818cf8'], pro: ['rgba(52,211,153,0.2)', '#34d399'], premium: ['rgba(251,191,36,0.2)', '#fbbf24'], platinum: ['rgba(168,85,247,0.2)', '#c084fc'] };
+  var c = colors[data.tier] || colors.free;
+  badge.style.background = c[0]; badge.style.color = c[1]; badge.textContent = data.tier.charAt(0).toUpperCase() + data.tier.slice(1);
   document.getElementById('dash-used').textContent = data.monthly_used || 0;
   document.getElementById('dash-remaining').textContent = data.monthly_remaining !== undefined ? data.monthly_remaining : (data.monthly_limit - data.monthly_used);
-  document.getElementById('dash-total').textContent = data.monthly_limit >= 99999 ? '∞' : data.monthly_limit;
-  var pct = Math.min(100, ((data.monthly_used / Math.max(1, data.monthly_limit)) * 100));
-  if (data.monthly_limit >= 99999) pct = 0;
+  document.getElementById('dash-total').textContent = data.monthly_limit >= 99999 ? '\u221E' : data.monthly_limit;
+  var pct = data.monthly_limit >= 99999 ? 0 : Math.min(100, ((data.monthly_used || 0) / data.monthly_limit) * 100);
   document.getElementById('dash-bar').style.width = pct + '%';
   var features = document.getElementById('dash-features');
   features.innerHTML = '';
   if (data.features) {
-    if (data.features.agent) features.innerHTML += '<span class="badge" style="background:rgba(52,211,153,0.15);color:#34d399;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;">🤖 Agent</span>';
+    if (data.features.agent) features.innerHTML += '<span class="badge" style="background:rgba(52,211,153,0.15);color:#34d399;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;">Agent</span>';
     if (data.features.custom_agent) features.innerHTML += '<span class="badge" style="background:rgba(168,85,247,0.15);color:#c084fc;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;">Custom Agents (' + data.features.custom_agent + ')</span>';
-    if (data.features.image) features.innerHTML += '<span class="badge" style="background:rgba(99,102,241,0.15);color:#818cf8;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;">🎨 Images</span>';
-    if (data.features.song) features.innerHTML += '<span class="badge" style="background:rgba(251,191,36,0.15);color:#fbbf24;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;">🎵 Songs</span>';
+    if (data.features.image) features.innerHTML += '<span class="badge" style="background:rgba(99,102,241,0.15);color:#818cf8;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;">Images</span>';
+    if (data.features.song) features.innerHTML += '<span class="badge" style="background:rgba(251,191,36,0.15);color:#fbbf24;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;">Songs</span>';
   }
 }
 
@@ -1206,16 +1190,17 @@ async function loadKeys() {
     var list = document.getElementById('dash-keys-list');
     list.innerHTML = '';
     if (data.keys && data.keys.length) {
-      data.keys.forEach(function(k) {
+      for (var i = 0; i < data.keys.length; i++) {
+        var k = data.keys[i];
         var div = document.createElement('div');
         div.style.cssText = 'display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:12px 16px;';
-        div.innerHTML = '<div><div style="font-family:monospace;font-size:13px;color:#a5b4fc;">' + k.prefix + '••••••••</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">' + k.label + ' • ' + k.tier + ' • ' + k.monthly_used + '/' + k.monthly_limit + ' used</div></div><div style="display:flex;gap:4px;"><button onclick="copyKey(\'nga_live_' + k.prefix + '\')" style="padding:4px 10px;font-size:11px;background:rgba(99,102,241,0.2);color:#818cf8;border:1px solid rgba(99,102,241,0.3);border-radius:6px;cursor:pointer;">Copy</button><button onclick="rotateKey(\'' + k.prefix + '\')" style="padding:4px 10px;font-size:11px;background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.3);border-radius:6px;cursor:pointer;">Rotate</button></div>';
+        div.innerHTML = '<div><div style="font-family:monospace;font-size:13px;color:#a5b4fc;">' + k.prefix + '........</div><div style="font-size:11px;color:#6b7280;margin-top:2px;">' + k.label + ' \u2022 ' + k.tier + ' \u2022 ' + k.monthly_used + '/' + k.monthly_limit + ' used</div></div><div style="display:flex;gap:4px;"><button onclick="copyKey(\'nga_live_' + k.prefix + '\')" style="padding:4px 10px;font-size:11px;background:rgba(99,102,241,0.2);color:#818cf8;border:1px solid rgba(99,102,241,0.3);border-radius:6px;cursor:pointer;">Copy</button><button onclick="rotateKey(\'' + k.prefix + '\')" style="padding:4px 10px;font-size:11px;background:rgba(52,211,153,0.15);color:#34d399;border:1px solid rgba(52,211,153,0.3);border-radius:6px;cursor:pointer;">Rotate</button></div>';
         list.appendChild(div);
-      });
+      }
     } else {
       list.innerHTML = '<p style="color:#6b7280;font-size:13px;text-align:center;padding:16px;">No keys found.</p>';
     }
-  } catch(e) {}
+  } catch (e) { }
 }
 
 async function rotateKey(prefix) {
@@ -1224,10 +1209,10 @@ async function rotateKey(prefix) {
     var res = await fetch(API_BASE + '/v1/keys/' + prefix + '/rotate', { method: 'POST', headers: { 'X-API-Key': dashSessionKey } });
     var data = await res.json();
     if (data.api_key) {
-      alert('New key: ' + data.api_key + '\n\nPaste this now — the old key no longer works.');
-      if (data.api_key.startsWith('nga_')) { dashSessionKey = data.api_key; loadKeys(); }
+      alert('New key: ' + data.api_key + '\n\nPaste this now \u2014 the old key no longer works.');
+      if (data.api_key.indexOf('nga_') === 0) { dashSessionKey = data.api_key; loadKeys(); }
     }
-  } catch(e) { alert('Error rotating key.'); }
+  } catch (e) { alert('Error rotating key.'); }
 }
 
 async function dashCreateKey() {
@@ -1237,10 +1222,10 @@ async function dashCreateKey() {
     var res = await fetch(API_BASE + '/v1/keys', { method: 'POST', headers: { 'X-API-Key': dashSessionKey, 'Content-Type': 'application/json' }, body: JSON.stringify({ label: label }) });
     var data = await res.json();
     if (data.api_key) {
-      alert('New key created: ' + data.api_key + '\n\nSave it now — it won\'t be shown again.');
+      alert('New key created: ' + data.api_key + '\n\nSave it now \u2014 it won\'t be shown again.');
       loadKeys();
     }
-  } catch(e) { alert('Error creating key.'); }
+  } catch (e) { alert('Error creating key.'); }
 }
 
 async function dashResetAgent() {
@@ -1250,83 +1235,66 @@ async function dashResetAgent() {
     var res = await fetch(API_BASE + '/v1/agent/reset', { method: 'POST', headers: { 'X-API-Key': dashSessionKey } });
     var data = await res.json();
     alert(data.message || 'Agent history cleared.');
-  } catch(e) { alert('Error clearing agent history.'); }
+  } catch (e) { alert('Error clearing agent history.'); }
 }
 
-// ── EXIT INTENT POPUP ──
+// Exit intent popup
 var exitPopupShown = false;
 var exitPopupEnabled = true;
 
-// Show popup when mouse leaves viewport (desktop)
-document.addEventListener('mouseleave', function(e) {
-  if (e.clientY < 10 && !exitPopupShown && exitPopupEnabled) {
-    showExitPopup();
-  }
+document.addEventListener('mouseleave', function (e) {
+  if (e.clientY < 10 && !exitPopupShown && exitPopupEnabled) showExitPopup();
 });
 
-// Show popup on mobile when scrolling back up quickly
-var lastScrollY = 0;
-var scrollUpCount = 0;
-window.addEventListener('scroll', function() {
+var lastScrollY = 0, scrollUpCount = 0;
+window.addEventListener('scroll', function () {
   if (window.innerWidth > 768) return;
-  var currentY = window.scrollY;
-  if (currentY < lastScrollY - 100) {
-    scrollUpCount++;
-    if (scrollUpCount > 3 && !exitPopupShown && exitPopupEnabled) {
-      showExitPopup();
-    }
-  } else if (currentY > lastScrollY + 50) {
-    scrollUpCount = 0;
-  }
-  lastScrollY = currentY;
+  var y = window.scrollY;
+  if (y < lastScrollY - 100) { scrollUpCount++; if (scrollUpCount > 3 && !exitPopupShown && exitPopupEnabled) showExitPopup(); }
+  else if (y > lastScrollY + 50) scrollUpCount = 0;
+  lastScrollY = y;
 });
 
 function showExitPopup() {
-  if (localStorage.getItem('niceguyapi_key')) return; // already signed up
+  if (localStorage.getItem('niceguyapi_key')) return;
   exitPopupShown = true;
   document.getElementById('exit-popup').classList.add('show');
 }
 
 function closeExitPopup() {
   document.getElementById('exit-popup').classList.remove('show');
-  exitPopupEnabled = false; // don't show again this session
+  exitPopupEnabled = false;
 }
 
 async function handleExitSignup() {
   var email = document.getElementById('exit-email').value.trim();
   var btn = document.getElementById('exit-btn');
-  if (!email || !email.includes('@')) {
-    alert('Please enter a valid email.');
-    return;
-  }
-  btn.disabled = true;
-  btn.textContent = 'Creating key...';
+  if (!email || email.indexOf('@') < 0) { alert('Please enter a valid email.'); return; }
+  btn.disabled = true; btn.textContent = 'Creating key...';
   try {
-    var res = await fetch(API_BASE + '/v1/signup', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, tier: 'free' })
-    });
+    var res = await fetch(API_BASE + '/v1/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: email, tier: 'free' }) });
     var data = await res.json();
     if (res.ok && data.api_key) {
       localStorage.setItem('niceguyapi_key', data.api_key);
       localStorage.setItem('niceguyapi_email', email);
       closeExitPopup();
-      // Show success on main page
       document.getElementById('api-key').textContent = data.api_key;
       document.getElementById('key-result').style.display = 'block';
       document.getElementById('signup-msg').innerHTML = '<span class="success">Your key is ready! Save it above.</span>';
       showTab('home');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      alert(data.error?.message || 'Something went wrong. Try again.');
+      alert(data.error && data.error.message || 'Something went wrong. Try again.');
     }
-  } catch(err) {
-    alert('Connection error. Try again.');
-  }
-  btn.disabled = false;
-  btn.textContent = 'Get My Free Key →';
+  } catch (err) { alert('Connection error. Try again.'); }
+  btn.disabled = false; btn.textContent = 'Get My Free Key \u2192';
 }
+
+// Dashboard enter key
+document.addEventListener('DOMContentLoaded', function () {
+  var dk = document.getElementById('dash-key-input');
+  if (dk) dk.addEventListener('keydown', function (e) { if (e.key === 'Enter') dashLogin(); });
+});
 </script>
 </body>
 </html>
