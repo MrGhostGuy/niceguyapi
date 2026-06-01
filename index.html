@@ -393,12 +393,29 @@
       <button class="nav-tab" id="tab-guide" onclick="showTab('guide')"><span>📖 </span>How-To</button>
       <button class="nav-tab" id="tab-dash" onclick="showTab('dash')"><span> </span>Dashboard</button>
       <button class="nav-tab" id="tab-faq" onclick="showTab('faq')"><span>❓ </span>FAQ</button>
-      <a class="nav-tab" href="/niceguyapi/niceguyapi-blog.html" style="text-decoration:none;"><span>📝 </span>Blog</a>
+      <button class="nav-tab" id="tab-blog" onclick="showTab('blog')"><span>📝 </span>Blog</button>
       <a class="nav-tab" href="/niceguyapi/niceguyapi-socials.html" style="text-decoration:none;"><span>🌐 </span>Social Posts</a>
     </div>
     <a href="#signup" class="nav-cta" onclick="showTab('home')">Get API Key</a>
   </div>
 </nav>
+
+<!-- Mobile Menu -->
+<button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">
+  <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+</button>
+<div class="mobile-overlay" id="mobileOverlay"></div>
+<div class="mobile-nav-panel" id="mobileNavPanel">
+  <button class="mobile-close-btn" id="mobileCloseBtn" aria-label="Close menu">&#10005;</button>
+  <div class="mobile-nav-header">Navigation</div>
+  <button class="mobile-tab-btn" data-tab="home" onclick="ngMobileSwitch('home')"><span class="mobile-tab-icon">&#127968;</span> Home</button>
+  <button class="mobile-tab-btn" data-tab="chat" onclick="ngMobileSwitch('chat')"><span class="mobile-tab-icon">&#128172;</span> Try Chat</button>
+  <button class="mobile-tab-btn" data-tab="guide" onclick="ngMobileSwitch('guide')"><span class="mobile-tab-icon">&#128214;</span> How-To</button>
+  <button class="mobile-tab-btn" data-tab="dash" onclick="ngMobileSwitch('dash')"><span class="mobile-tab-icon">&#128202;</span> Dashboard</button>
+  <button class="mobile-tab-btn" data-tab="faq" onclick="ngMobileSwitch('faq')"><span class="mobile-tab-icon">&#10067;</span> FAQ</button>
+  <button class="mobile-tab-btn" data-tab="blog" onclick="ngMobileSwitch('blog')"><span class="mobile-tab-icon">&#27112;</span> Blog</button>
+  <a class="mobile-tab-btn" href="/niceguyapi/niceguyapi-socials.html" style="text-decoration:none;color:rgba(255,255,255,0.7);"><span class="mobile-tab-icon">&#127760;</span> Social Posts</a>
+</div>
 
 <div class="container">
 
@@ -1070,6 +1087,60 @@ Premium Models (requires Premium plan — top-tier AI):
   </div>
   <!-- END DASHBOARD TAB -->
 
+  <!-- BLOG TAB -->
+  <div class="tab-content" id="content-blog">
+    <div style="margin-top:20px;">
+      <div style="text-align:center;margin-bottom:30px;">
+        <div class="badge badge-green" style="margin-bottom:12px;">📝 NiceGuyAPI Blog</div>
+        <h2 style="font-size:28px;font-weight:700;color:#e8e8ec;margin-bottom:8px;">Guides, Tutorials & Updates</h2>
+        <p style="color:#6b7280;font-size:14px;max-width:500px;margin:0 auto;">Learn how to get the most out of NiceGuyAPI. From beginner setup to advanced agent workflows.</p>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:30px;">
+
+        <div class="guide-card" style="cursor:pointer;" onclick="window.open('https://mrghostguy.github.io/niceguyapi/niceguyapi-blog.html?p=getting-started-with-niceguyapi','_blank')">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span class="badge" style="background:rgba(99,102,241,0.15);color:#818cf8;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;">Tutorial</span>
+            <span style="font-size:12px;color:#4b5563;">5 min</span>
+          </div>
+          <h3 style="color:#e8e8ec;font-size:16px;font-weight:700;margin-bottom:6px;">Getting Started in 5 Minutes</h3>
+          <p style="font-size:13px;color:#6b7280;">Sign up, get your free API key, and make your first request. Works with cURL, Python, and JavaScript.</p>
+        </div>
+
+        <div class="guide-card" style="cursor:pointer;" onclick="window.open('https://mrghostguy.github.io/niceguyapi/niceguyapi-blog.html?p=best-free-ai-apis-2026','_blank')">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span class="badge" style="background:rgba(52,211,153,0.15);color:#34d399;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;">Guide</span>
+            <span style="font-size:12px;color:#4b5563;">8 min</span>
+          </div>
+          <h3 style="color:#e8e8ec;font-size:16px;font-weight:700;margin-bottom:6px;">Best Free AI APIs in 2026</h3>
+          <p style="font-size:13px;color:#6b7280;">We compared OpenRouter, OpenAI, Anthropic, and more. See why developers are switching to unified gateways.</p>
+        </div>
+
+        <div class="guide-card" style="cursor:pointer;" onclick="window.open('https://mrghostguy.github.io/niceguyapi/niceguyapi-blog.html?p=build-ai-agent-niceguyapi','_blank')">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span class="badge" style="background:rgba(251,191,36,0.15);color:#fbbf24;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;">Advanced</span>
+            <span style="font-size:12px;color:#4b5563;">12 min</span>
+          </div>
+          <h3 style="color:#e8e8ec;font-size:16px;font-weight:700;margin-bottom:6px;">Build an AI Agent</h3>
+          <p style="font-size:13px;color:#6b7280;">Step-by-step tutorial: Build a ReAct-style agent that searches the web, reads pages, and solves multi-step tasks.</p>
+        </div>
+
+        <div class="guide-card" style="cursor:pointer;" onclick="window.open('https://mrghostguy.github.io/niceguyapi/niceguyapi-blog.html?p=openai-compatible-api-guide','_blank')">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span class="badge" style="background:rgba(99,102,241,0.15);color:#818cf8;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600;">Tutorial</span>
+            <span style="font-size:12px;color:#4b5563;">6 min</span>
+          </div>
+          <h3 style="color:#e8e8ec;font-size:16px;font-weight:700;margin-bottom:6px;">OpenAI Drop-in Replacement</h3>
+          <p style="font-size:13px;color:#6b7280;">Replace your OpenAI API calls in one line of code. Works with all OpenAI SDKs — Python, JS, LangChain.</p>
+        </div>
+
+      </div>
+      <div style="text-align:center;margin-top:20px;">
+        <a href="https://mrghostguy.github.io/niceguyapi/niceguyapi-socials.html" class="btn btn-secondary" style="background:rgba(255,255,255,0.06);color:#9ca3af;border:1px solid rgba(255,255,255,0.12);padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;text-decoration:none;display:inline-block;">🌐 View All Social Posts →</a>
+      </div>
+    </div>
+  </div>
+  <!-- END BLOG TAB -->
+
   <!-- SUCCESS BOX (hidden, shown after payment) -->
   <div class="success-box" id="success-box">
     <div class="checkmark">✅</div>
@@ -1101,7 +1172,7 @@ Premium Models (requires Premium plan — top-tier AI):
 var API_BASE = 'https://niceguyapi-repo.vercel.app';
 
 function showTab(name) {
-  var tabs = ['home', 'chat', 'guide', 'faq', 'dash'];
+  var tabs = ['home', 'chat', 'guide', 'faq', 'dash', 'blog'];
   for (var i = 0; i < tabs.length; i++) {
     var t = tabs[i];
     var c = document.getElementById('content-' + t);
