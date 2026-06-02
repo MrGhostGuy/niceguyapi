@@ -4,20 +4,50 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NiceGuyAPI — One API for Every AI Model</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <meta name="description" content="Access 23+ AI models through a single API. Autonomous AI Agent with web search, fetch, calculator. Stripe billing, key management. Try free.">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif; background: #08080c; color: #d4d4de; line-height: 1.6; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif; background: #08080c; color: #d4d4de; line-height: 1.6; }
     .container { max-width: 1000px; margin: 0 auto; padding: 60px 24px; }
+
+    /* ── AURORA BOREALIS TOP GLOW ── */
+    body::before {
+      content: '';
+      position: fixed; top: 0; left: -50%; right: -50%; height: 3px;
+      background: linear-gradient(90deg, #ff0040, #ff4500, #ffaa00, #00ff88, #00bfff, #5b5bff, #a855f7, #ff00aa, #ff0040);
+      background-size: 200% 100%;
+      animation: auroraShift 6s linear infinite;
+      z-index: 9999; filter: blur(1px); pointer-events: none;
+    }
+    body::after {
+      content: '';
+      position: fixed; top: 0; left: 0; right: 0; height: 60px;
+      z-index: 9998; pointer-events: none; mix-blend-mode: screen;
+      animation: auroraPulse 8s ease-in-out infinite alternate;
+      background: linear-gradient(180deg, rgba(99,102,241,0.12) 0%, rgba(168,85,247,0.06) 40%, transparent 100%);
+    }
+    @keyframes auroraShift {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 200% 0%; }
+    }
+    @keyframes auroraPulse {
+      0%   { opacity: 0.6; background: linear-gradient(180deg, rgba(99,102,241,0.15) 0%, rgba(52,211,153,0.06) 50%, transparent 100%); }
+      25%  { opacity: 0.8; background: linear-gradient(180deg, rgba(52,211,153,0.12) 0%, rgba(59,130,246,0.08) 50%, transparent 100%); }
+      50%  { opacity: 0.7; background: linear-gradient(180deg, rgba(59,130,246,0.14) 0%, rgba(168,85,247,0.08) 50%, transparent 100%); }
+      75%  { opacity: 0.9; background-gradient(180deg, rgba(168,85,247,0.12) 0%, rgba(236,72,153,0.06) 50%, transparent 100%); }
+      100% { opacity: 0.6; background: linear-gradient(180deg, rgba(99,102,241,0.15) 0%, rgba(52,211,153,0.06) 50%, transparent 100%); }
+    }
 
     /* ── NAV ── */
     .nav { position: sticky; top: 0; z-index: 100; background: rgba(8,8,12,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.06); padding: 0 24px; }
-    .nav-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 56px; }
-    .nav-logo { font-weight: 700; font-size: 16px; background: linear-gradient(135deg, #a78bfa, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
-    .nav-tabs { display: flex; gap: 4px; }
-    .nav-tab { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; color: #9ca3af; cursor: pointer; border: none; background: transparent; transition: all 0.2s; }
-    .nav-tab:hover { color: #e8e8ec; background: rgba(255,255,255,0.05); }
-    .nav-tab.active { color: #818cf8; background: rgba(99,102,241,0.15); }
+    .nav-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; height: 56px; gap: 12px; }
+    .nav-spacer { flex: 1; }
+    .nav-logo { font-family: 'Orbitron', sans-serif; font-weight: 800; font-size: 15px; letter-spacing: 1px; background: linear-gradient(135deg, #00f0ff, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-decoration: none; }
+    .nav-tabs { display: none !important; }
+    .nav-tab { display: none !important; }
     .nav-cta { padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; cursor: pointer; text-decoration: none; transition: all 0.2s; }
     .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
 
@@ -26,7 +56,38 @@
     .badge { display: inline-block; background: rgba(99,102,241,0.15); color: #818cf8; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
     .badge-green { background: rgba(52,211,153,0.15); color: #34d399; }
     .badge-amber { background: rgba(251,191,36,0.15); color: #fbbf24; }
-    .hero h1 { font-size: 48px; font-weight: 800; background: linear-gradient(135deg, #a78bfa, #818cf8, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 14px; line-height: 1.2; }
+    .hero h1 {
+      font-family: 'Orbitron', 'SF Pro Display', sans-serif;
+      font-size: 48px; font-weight: 900;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, #a78bfa 0%, #00f0ff 25%, #a78bfa 50%, #ff00aa 75%, #a78bfa 100%);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 14px; line-height: 1.2;
+      animation: titleGradient 6s ease-in-out infinite;
+      position: relative;
+      filter: drop-shadow(0 0 2px rgba(167,139,250,0.3));
+    }
+    .hero h1::after {
+      content: '';
+      position: absolute; bottom: -4px; left: 0;
+      width: 80px; height: 3px;
+      background: linear-gradient(90deg, #00f0ff, #a78bfa, transparent);
+      border-radius: 2px;
+      animation: titleLineGlow 3s ease-in-out infinite alternate;
+    }
+    @keyframes titleGradient {
+      0%   { background-position: 0% 50%; filter: drop-shadow(0 0 2px rgba(167,139,250,0.3)); }
+      25%  { background-position: 50% 0%; filter: drop-shadow(0 0 6px rgba(0,240,255,0.4)); }
+      50%  { background-position: 100% 50%; filter: drop-shadow(0 0 4px rgba(255,0,170,0.3)); }
+      75%  { background-position: 50% 100%; filter: drop-shadow(0 0 6px rgba(0,240,255,0.4)); }
+      100% { background-position: 0% 50%; filter: drop-shadow(0 0 2px rgba(167,139,250,0.3)); }
+    }
+    @keyframes titleLineGlow {
+      0%   { opacity: 0.6; width: 80px; box-shadow: 0 0 8px rgba(0,240,255,0.4); }
+      100% { opacity: 1; width: 120px; box-shadow: 0 0 16px rgba(0,240,255,0.6); }
+    }
     .hero p { font-size: 18px; color: #9ca3af; max-width: 560px; margin: 0 auto 20px; }
     .hero-badges { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 20px; }
     .model-pill { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 4px 12px; font-size: 11px; color: #9ca3af; }
@@ -255,20 +316,22 @@
   .hamburger-btn {
     display: flex !important; flex-direction: column; justify-content: center;
     align-items: center; gap: 5px; width: 44px; height: 44px;
-    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,240,255,0.06); border: 1px solid rgba(0,240,255,0.2);
     border-radius: 10px; cursor: pointer; padding: 10px; z-index: 1001;
     transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: 0 0 8px rgba(0,240,255,0.15);
   }
-  .hamburger-btn:hover { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
+  .hamburger-btn:hover { background: rgba(0,240,255,0.12); border-color: rgba(0,240,255,0.4); box-shadow: 0 0 14px rgba(0,240,255,0.3); }
   .hamburger-btn .bar {
-    display: block; width: 22px; height: 2px; background: var(--text, #fff);
+    display: block; width: 22px; height: 2px; background: #00f0ff;
     border-radius: 2px;
     transition: all 0.35s cubic-bezier(0.68,-0.55,0.265,1.55);
+    box-shadow: 0 0 4px rgba(0,240,255,0.5);
   }
   .hamburger-btn.active .bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
   .hamburger-btn.active .bar:nth-child(2) { opacity: 0; transform: scaleX(0); }
   .hamburger-btn.active .bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-  .hamburger-btn.active { background: rgba(100,140,255,0.15); border-color: var(--accent,#6485ff); }
+  .hamburger-btn.active { background: rgba(0,240,255,0.15); border-color: #00f0ff; box-shadow: 0 0 16px rgba(0,240,255,0.4); }
   .mobile-overlay {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
@@ -276,28 +339,32 @@
   }
   .mobile-overlay.open { display: block; opacity: 1; }
   .mobile-nav-panel {
-    position: fixed; top: 0; right: -300px; width: 280px; height: 100vh;
-    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    position: fixed; top: 0; left: -320px; width: 280px; height: 100vh;
+    background: linear-gradient(180deg, #0a0a14 0%, #0d1117 50%, #0a0a14 100%);
     z-index: 1000; padding: 70px 0 30px;
-    box-shadow: -10px 0 40px rgba(0,0,0,0.5);
-    transition: right 0.4s cubic-bezier(0.22,1,0.36,1);
+    border-right: 2px solid #00f0ff;
+    box-shadow: 0 0 8px rgba(0,240,255,0.4), 0 0 20px rgba(0,240,255,0.15), 5px 0 40px rgba(0,0,0,0.6);
+    transition: left 0.4s cubic-bezier(0.22,1,0.36,1);
     overflow-y: auto;
   }
-  .mobile-nav-panel.open { right: 0; }
+  .mobile-nav-panel.open { left: 0; }
   .mobile-nav-header {
     padding: 0 24px 16px;
-    font-size: 11px; font-weight: 700; letter-spacing: 2px;
-    text-transform: uppercase; color: rgba(255,255,255,0.3);
-    border-bottom: 1px solid rgba(255,255,255,0.06); margin-bottom: 12px;
+    font-size: 11px; font-weight: 700; letter-spacing: 3px;
+    text-transform: uppercase; color: rgba(0,240,255,0.5);
+    text-shadow: 0 0 6px rgba(0,240,255,0.3);
+    border-bottom: 1px solid rgba(0,240,255,0.15); margin-bottom: 12px;
   }
-  .mobile-tab-btn {
+  .mobile-tab-btn, .mobile-nav-panel a.mobile-tab-btn {
     display: flex; align-items: center; gap: 14px;
     width: calc(100% - 32px); margin: 4px 16px; padding: 14px 18px;
-    background: transparent; border: 1px solid transparent; border-radius: 12px;
+    background: rgba(0,240,255,0.03); border: 1px solid rgba(0,240,255,0.12); border-radius: 12px;
     font-family: 'Segoe UI', system-ui, sans-serif; font-size: 16px; font-weight: 600;
-    color: rgba(255,255,255,0.7); cursor: pointer; text-align: left;
+    color: #00f0ff;
+    text-shadow: 0 0 4px rgba(0,240,255,0.4), 0 0 10px rgba(0,240,255,0.15);
+    cursor: pointer; text-align: left;
     transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
-    opacity: 0; transform: translateX(30px);
+    opacity: 0; transform: translateX(-30px);
   }
   .mobile-nav-panel.open .mobile-tab-btn { opacity: 1; transform: translateX(0); }
   .mobile-tab-btn:nth-child(2) { transition-delay: 0.05s; }
@@ -306,20 +373,25 @@
   .mobile-tab-btn:nth-child(5) { transition-delay: 0.20s; }
   .mobile-tab-btn:nth-child(6) { transition-delay: 0.25s; }
   .mobile-tab-btn:hover, .mobile-tab-btn.active {
-    background: rgba(100,140,255,0.1); border-color: rgba(100,140,255,0.25);
-    color: #fff; transform: translateX(6px);
+    background: rgba(0,240,255,0.1); border-color: rgba(0,240,255,0.4);
+    color: #fff;
+    text-shadow: 0 0 6px rgba(0,240,255,0.7), 0 0 15px rgba(0,240,255,0.3);
+    box-shadow: 0 0 12px rgba(0,240,255,0.15), inset 0 0 12px rgba(0,240,255,0.05);
+    transform: translateX(6px);
   }
   .mobile-tab-icon { font-size: 20px; width: 28px; text-align: center; }
   .mobile-close-btn {
     position: absolute; top: 16px; right: 16px; width: 38px; height: 38px;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 50%; font-size: 20px; color: rgba(255,255,255,0.5);
+    background: rgba(0,240,255,0.06); border: 1px solid rgba(0,240,255,0.25);
+    border-radius: 50%; font-size: 20px; color: #00f0ff;
     cursor: pointer; transition: all 0.25s ease;
+    text-shadow: 0 0 6px rgba(0,240,255,0.6);
   }
   .mobile-close-btn:hover {
-    background: rgba(255,80,80,0.15); border-color: rgba(255,80,80,0.3);
+    background: rgba(0,240,255,0.15); border-color: #00f0ff;
     color: #fff; transform: rotate(90deg);
+    box-shadow: 0 0 12px rgba(0,240,255,0.5);
   }
   .nav-tabs-container { display: none !important; }
   /* Premium tab transitions */
@@ -386,7 +458,11 @@
 
 <nav class="nav">
   <div class="nav-inner">
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">
+      <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+    </button>
     <a href="#" class="nav-logo" onclick="showTab('home'); return false;">⚡ NiceGuyAPI</a>
+    <div class="nav-spacer"></div>
     <div class="nav-tabs">
       <button class="nav-tab active" id="tab-home" onclick="showTab('home')">Home</button>
       <button class="nav-tab" id="tab-chat" onclick="showTab('chat')"><span>💬 </span>Try Chat</button>
@@ -401,9 +477,6 @@
 </nav>
 
 <!-- Mobile Menu -->
-<button class="hamburger-btn" id="hamburgerBtn" aria-label="Open menu">
-  <span class="bar"></span><span class="bar"></span><span class="bar"></span>
-</button>
 <div class="mobile-overlay" id="mobileOverlay"></div>
 <div class="mobile-nav-panel" id="mobileNavPanel">
   <button class="mobile-close-btn" id="mobileCloseBtn" aria-label="Close menu">&#10005;</button>
