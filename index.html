@@ -311,8 +311,7 @@
   </style>
 
 <style>
-/* MOBILE MENU + PREMIUM TRANSITIONS */
-@media (max-width: 768px) {
+/* HAMBURGER + PREMIUM TRANSITIONS — ALL SCREENS */
   .hamburger-btn {
     display: flex !important; flex-direction: column; justify-content: center;
     align-items: center; gap: 5px; width: 44px; height: 44px;
@@ -332,6 +331,7 @@
   .hamburger-btn.active .bar:nth-child(2) { opacity: 0; transform: scaleX(0); }
   .hamburger-btn.active .bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
   .hamburger-btn.active { background: rgba(0,240,255,0.15); border-color: #00f0ff; box-shadow: 0 0 16px rgba(0,240,255,0.4); }
+
   .mobile-overlay {
     display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
@@ -420,8 +420,8 @@
   .tab-content.active > *:nth-child(5) { animation-delay: 0.25s; }
   .tab-content.active > *:nth-child(6) { animation-delay: 0.30s; }
 }
+
 @media (min-width: 769px) {
-  .hamburger-btn, .mobile-overlay, .mobile-nav-panel { display: none !important; }
   .tab-content {
     transition: opacity 0.45s cubic-bezier(0.22,1,0.36,1),
                 transform 0.45s cubic-bezier(0.22,1,0.36,1),
