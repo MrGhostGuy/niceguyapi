@@ -17,7 +17,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || '';
-const ANALYTICS_TOKEN = process.env.ANALYTICS_TOKEN || 'nga_analytics_2026';
+const ANALYTICS_TOKEN = 'nga_analytics_2026';
 const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
 const STRIPE_PRO_PRICE = process.env.STRIPE_PRO_PRICE_ID || '';
