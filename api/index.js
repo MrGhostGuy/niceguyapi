@@ -1,5 +1,5 @@
 /**
- * NiceGuyAPI v5.5.0 - AI Agent Gateway with Custom Agents & Stripe Live Payments + Webhook
+ * NiceGuyAPI v5.6.0 - AI Agent Gateway with Custom Agents & Stripe Live Payments + Webhook + Analytics
  *
  * OpenAI-compatible chat completions via OpenRouter.
  * 23+ AI models. Autonomous Agent with web search, fetch, calculator.
@@ -17,6 +17,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
 const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || '';
+const ANALYTICS_TOKEN = process.env.ANALYTICS_TOKEN || 'nga_analytics_2026';
 const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || '';
 const STRIPE_PRO_PRICE = process.env.STRIPE_PRO_PRICE_ID || '';
@@ -42,12 +43,21 @@ function apiError(res, s, msg, type, extra) { return res.status(s).json({ error:
 let cache = null;
 async function loadDb() {
   if (cache) return cache;
-  cache = { keys:{}, byEmail:{}, byPrefix:{}, billing:{}, agent_history:{}, rate_limits:{}, agents:{}, agent_histories:{} };
+  cache = { keys:{}, byEmail:{}, byPrefix:{}, billing:{}, agent_history:{}, rate_limits:{}, agents:{}, agent_histories:{}, analytics:{} };
   try {
     const id = process.env.JSONBLOB_ID;
     if (id) { const r = await fetch('https://jsonblob.com/api/jsonBlob/'+id); if (r.ok) cache = { ...cache, ...await r.json() }; }
   } catch(e) { console.warn('[NG] DB load:', e.message); }
-  ['keys','byEmail','byPrefix','billing','agent_history','rate_limits','agents','agent_histories'].forEach(f => { if (!cache[f]) cache[f] = {}; });
+  ['keys','byEmail','byPrefix','billing','agent_history','rate_limits','agents','agent_histories','analytics'].forEach(f => { if (!cache[f]) cache[f] = {}; });
+  // Ensure analytics structure with defaults
+  if (typeof cache.analytics.total_visits !== 'number') cache.analytics.total_visits = 0;
+  if (!Array.isArray(cache.analytics.unique_visitors)) cache.analytics.unique_visitors = [];
+  if (!Array.isArray(cache.analytics.paid_conversions)) cache.analytics.paid_conversions = [];
+  if (typeof cache.analytics.signups_total !== 'number') cache.analytics.signups_total = 0;
+  if (!cache.analytics.hourly_hits) cache.analytics.hourly_hits = {};
+  if (!cache.analytics.referrers) cache.analytics.referrers = {};
+  if (!cache.analytics.daily_stats) cache.analytics.daily_stats = {};
+  if (!cache.analytics.page_views) cache.analytics.page_views = {};
   return cache;
 }
 async function saveDb(db) {
@@ -214,6 +224,8 @@ app.post('/v1/stripe/webhook', express.raw({type:'application/json'}), async (re
           db.keys[keyId].pending_tier = null;
           if (db.billing[session.id]) db.billing[session.id].status = 'active';
           await saveDb(db);
+          // Track paid conversion in analytics
+          try { await trackPaidConversion(db.keys[keyId].email, tier, TIERS[tier].price); } catch(e) {}
           console.log('[NG] Activated', tier, 'for key', keyId);
         }
       }
@@ -239,10 +251,93 @@ app.post('/v1/stripe/webhook', express.raw({type:'application/json'}), async (re
 });
 
 // Health
-app.get('/health', (req,res) => res.status(200).json({ status:'ok', version:'5.5.0', timestamp:new Date().toISOString(), storage:process.env.JSONBLOB_ID?'persistent':'memory-only', agent:true, custom_agents:true, stripe:!!stripe, stripe_mode:STRIPE_SECRET.startsWith('sk_live_')?'live':'test', webhook:!!STRIPE_WEBHOOK_SECRET }));
+app.get('/health', (req,res) => res.status(200).json({ status:'ok', version:'5.6.0', timestamp:new Date().toISOString(), storage:process.env.JSONBLOB_ID?'persistent':'memory-only', agent:true, custom_agents:true, stripe:!!stripe, stripe_mode:STRIPE_SECRET.startsWith('sk_live_')?'live':'test', webhook:!!STRIPE_WEBHOOK_SECRET, analytics:true }));
 
 // Root
-app.get('/', (req,res) => res.json({ name:'NiceGuyAPI', version:'5.5.0', description:'AI Model Gateway + Agent. Custom Agents. Stripe + key management. Live payments enabled.', base_url:'/v1', pricing:{free:'$0/12req/75k',pro:'$6/40req/145k',premium:'$27/250req/315k',platinum:'$55/99999/750k'}, payments:STRIPE_SECRET.startsWith('sk_live_')?'live':'test', auth:'X-API-Key header', endpoints:['GET /health','POST /v1/signup','GET /v1/models','POST /v1/chat/completions','POST /v1/agent','GET /v1/usage','GET /v1/keys','POST /v1/keys','DELETE /v1/keys/:prefix','POST /v1/keys/:prefix/rotate','POST /v1/agent/reset','GET /v1/agents','POST /v1/agents','GET /v1/agents/:id','PUT /v1/agents/:id','DELETE /v1/agents/:id','POST /v1/agents/:id/reset'] }));
+app.get('/', (req,res) => res.json({ name:'NiceGuyAPI', version:'5.6.0', description:'AI Model Gateway + Agent. Custom Agents. Stripe + key management. Live payments enabled.', base_url:'/v1', pricing:{free:'$0/12req/75k',pro:'$6/40req/145k',premium:'$27/250req/315k',platinum:'$55/99999/750k'}, payments:STRIPE_SECRET.startsWith('sk_live_')?'live':'test', auth:'X-API-Key header', endpoints:['GET /health','POST /v1/signup','GET /v1/models','POST /v1/chat/completions','POST /v1/agent','GET /v1/usage','GET /v1/keys','POST /v1/keys','DELETE /v1/keys/:prefix','POST /v1/keys/:prefix/rotate','POST /v1/agent/reset','GET /v1/agents','POST /v1/agents','GET /v1/agents/:id','PUT /v1/agents/:id','DELETE /v1/agents/:id','POST /v1/agents/:id/reset'] }));
+
+// ── ANALYTICS TRACKING ──
+// Track page visits (called from landing page JS)
+app.post('/v1/analytics/track', async (req,res) => {
+  const db = await loadDb();
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  const hour = now.getUTCHours();
+  const { page, referrer, visitor_id } = req.body;
+
+  db.analytics.total_visits++;
+
+  const vid = visitor_id || req.ip || 'unknown';
+  if (!db.analytics.unique_visitors.includes(vid)) {
+    db.analytics.unique_visitors.push(vid);
+    if (db.analytics.unique_visitors.length > 10000) {
+      db.analytics.unique_visitors = db.analytics.unique_visitors.slice(-5000);
+    }
+  }
+
+  const hourKey = today + 'T' + hour;
+  db.analytics.hourly_hits[hourKey] = (db.analytics.hourly_hits[hourKey] || 0) + 1;
+
+  const pg = page || '/';
+  db.analytics.page_views[pg] = (db.analytics.page_views[pg] || 0) + 1;
+
+  let ref = 'direct';
+  try { if (referrer && referrer !== '') ref = new URL(referrer).hostname; } catch(e) {}
+  db.analytics.referrers[ref] = (db.analytics.referrers[ref] || 0) + 1;
+
+  if (!db.analytics.daily_stats[today]) {
+    db.analytics.daily_stats[today] = { visits:0, signups:0, paid_conversions:0, api_calls:0 };
+  }
+  db.analytics.daily_stats[today].visits++;
+
+  await saveDb(db);
+  res.json({ ok:true });
+});
+
+// Analytics dashboard (protected by token)
+app.get('/v1/analytics/dashboard', async (req,res) => {
+  const token = req.query.token || req.headers['x-analytics-token'];
+  if (token !== ANALYTICS_TOKEN) return apiError(res,403,'Invalid analytics token','auth_error');
+
+  const db = await loadDb();
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  const yesterday = new Date(now - 86400000).toISOString().split('T')[0];
+
+  const allKeys = Object.values(db.keys || {});
+  const freeSignups = allKeys.filter(k => k.tier === 'free').length;
+  const paidKeys = allKeys.filter(k => k.tier !== 'free');
+  const paidByTier = {};
+  paidKeys.forEach(k => { paidByTier[k.tier] = (paidByTier[k.tier] || 0) + 1; });
+
+  const todayStats = db.analytics.daily_stats[today] || { visits:0, signups:0, paid_conversions:0 };
+  const yesterdayStats = db.analytics.daily_stats[yesterday] || { visits:0, signups:0, paid_conversions:0 };
+
+  const hourly = {};
+  for (let i = 0; i < 24; i++) {
+    const h = new Date(now - i * 3600000);
+    const key = h.toISOString().split('T')[0] + 'T' + h.getUTCHours();
+    if (db.analytics.hourly_hits[key]) hourly[key] = db.analytics.hourly_hits[key];
+  }
+
+  const topReferrers = Object.entries(db.analytics.referrers || {}).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const topPages = Object.entries(db.analytics.page_views || {}).sort((a,b)=>b[1]-a[1]).slice(0,10);
+
+  res.json({
+    generated_at: now.toISOString(),
+    total_visits: db.analytics.total_visits,
+    unique_visitors: db.analytics.unique_visitors.length,
+    today: { visits: todayStats.visits, signups: todayStats.signups||0, paid_conversions: todayStats.paid_conversions||0 },
+    yesterday: { visits: yesterdayStats.visits, signups: yesterdayStats.signups||0 },
+    all_time: {
+      total_signups: allKeys.length, free_signups: freeSignups,
+      paid_subscribers: paidKeys.length, paid_by_tier: paidByTier,
+      total_paid_revenue: paidKeys.reduce((sum,k) => sum + (TIERS[k.tier]?.price || 0), 0),
+    },
+    hourly_hits_last_24h: hourly,
+    top_referrers: topReferrers, top_pages: topPages,
+  });
+});
 
 // Signup
 app.post('/v1/signup', async (req,res) => {
@@ -253,6 +348,16 @@ app.post('/v1/signup', async (req,res) => {
   const id = uuidv4(), raw = 'nga_live_'+crypto.randomBytes(24).toString('hex'), hash = await bcrypt.hash(raw,10), prefix = raw.substring(0,12), tc = TIERS[sel];
   db.keys[id] = { id, key_hash:hash, key_prefix:prefix, email, tier:sel, pending_tier:null, label:label||'Default', active:1, monthly_limit:tc.monthly_requests, monthly_used:0, total_requests:0, created_at:new Date().toISOString(), last_used_at:null, billing_period_start:new Date().toISOString() };
   db.byEmail[ek] = id; db.byPrefix[prefix] = id;
+
+  // Track signup in analytics
+  const today = new Date().toISOString().split('T')[0];
+  if (!db.analytics.daily_stats[today]) db.analytics.daily_stats[today] = { visits:0, signups:0, paid_conversions:0, api_calls:0 };
+  db.analytics.daily_stats[today].signups++;
+  db.analytics.signups_total++;
+  if (sel !== 'free') {
+    db.analytics.daily_stats[today].paid_conversions++;
+    db.analytics.paid_conversions.push({ email, tier:sel, date:new Date().toISOString(), price:tc.price });
+  }
 
   // Stripe Checkout for paid tiers
   if (sel!=='free' && stripe) {
@@ -539,6 +644,16 @@ app.get('/v1/usage', auth, (req,res) => {
     rate_limit:{per_minute:tc.rate_limit_per_minute,per_day:tc.rate_limit_per_day}, available_models:models.length,
   });
 });
+
+// Helper: track paid conversion (also called from webhook)
+async function trackPaidConversion(email, tier, price) {
+  const db = await loadDb();
+  const today = new Date().toISOString().split('T')[0];
+  if (!db.analytics.daily_stats[today]) db.analytics.daily_stats[today] = { visits:0, signups:0, paid_conversions:0, api_calls:0 };
+  db.analytics.daily_stats[today].paid_conversions++;
+  db.analytics.paid_conversions.push({ email, tier, date:new Date().toISOString(), price });
+  await saveDb(db);
+}
 
 // 404
 app.use((req,res) => apiError(res,404,'Route '+req.method+' '+req.path+' not found','not_found'));

@@ -1591,5 +1591,122 @@ document.addEventListener('DOMContentLoaded', function () {
   var orig=window.showTab;window.showTab=function(n){var r=orig(n);syncActive();return r;};
 })();
 </script>
+
+<!-- ========== ANALYTICS TRACKING & WIDGET ========== -->
+<script>
+(function() {
+  var API_BASE = 'https://niceguyapi-repo.vercel.app';
+  var ANALYTICS_TOKEN = 'nga_analytics_2026';
+
+  // --- Visitor ID ---
+  var visitorId = localStorage.getItem('ng_visitor_id');
+  if (!visitorId) {
+    visitorId = 'ngv_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 10);
+    localStorage.setItem('ng_visitor_id', visitorId);
+  }
+
+  // -- Track page visit ---
+  try {
+    var page = window.location.pathname + window.location.search;
+    var ref = document.referrer || '';
+    fetch(API_BASE + '/v1/analytics/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ page: page, referrer: ref, visitor_id: visitorId })
+    }).catch(function(){});
+  } catch(e) {}
+
+  // --- Analytics Widget for Dashboard Tab ---
+  function createAnalyticsWidget() {
+    var dashTab = document.getElementById('content-dash');
+    if (!dashTab) return;
+
+    // Check if widget already exists
+    if (document.getElementById('ng-analytics-widget')) return;
+
+    var widget = document.createElement('div');
+    widget.id = 'ng-analytics-widget';
+    widget.style.cssText = 'background:rgba(255,255,255,0.03);border:1px solid rgba(52,211,153,0.2);border-radius:16px;padding:24px;margin-top:20px;';
+    widget.innerHTML = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;"><span style="font-size:20px;">📊</span><h3 style="font-size:16px;font-weight:700;color:#e8e8ec;">Site Analytics</h3><span style="margin-left:auto;font-size:11px;background:rgba(52,211,153,0.15);color:#34d399;padding:3px 10px;border-radius:10px;font-weight:600;">LIVE</span></div><div id="ng-analytics-loading" style="text-align:center;padding:20px;color:#6b7280;font-size:13px;">Loading analytics...</div><div id="ng-analytics-data" style="display:none;"><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;text-align:center;margin-bottom:16px;"><div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:14px 8px;"><div style="font-size:22px;font-weight:800;color:#e8e8ec;" id="ng-stat-visits">&mdash;</div><div style="font-size:11px;color:#6b7280;margin-top:4px;">Total Visits</div></div><div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:14px 8px;"><div style="font-size:22px;font-weight:800;color:#34d399;" id="ng-stat-unique">&mdash;</div><div style="font-size:11px;color:#6b7280;margin-top:4px;">Unique Visitors</div></div><div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:14px 8px;"><div style="font-size:22px;font-weight:800;color:#818cf8;" id="ng-stat-signups">&mdash;</div><div style="font-size:11px;color:#6b7280;margin-top:4px;">Signups</div></div><div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:14px 8px;"><div style="font-size:22px;font-weight:800;color:#fbbf24;" id="ng-stat-revenue">&mdash;</div><div style="font-size:11px;color:#6b7280;margin-top:4px;">Revenue</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"><div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:14px;"><div style="font-size:12px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Top Pages</div><div id="ng-stat-pages" style="font-size:12px;color:#9ca3af;line-height:1.8;"></div></div><div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:14px;"><div style="font-size:12px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Top Referrers</div><div id="ng-stat-refs" style="font-size:12px;color:#9ca3af;line-height:1.8;"></div></div></div><div style="margin-top:12px;text-align:center;"><span style="font-size:11px;color:#4b5563;">Powered by NiceGuyAPI Analytics • v5.6.0</span></div></div><div id="ng-analytics-error" style="display:none;text-align:center;padding:20px;color:#f87171;font-size:13px;">Unable to load analytics</div>';
+
+    // Insert after the agent memory section (at the end of dash-content or after dash-gate)
+    var dashContent = document.getElementById('dash-content');
+    if (dashContent) {
+      dashContent.appendChild(widget);
+    } else {
+      // If gate is showing, insert after it
+      var gate = document.getElementById('dash-gate');
+      if (gate && gate.parentNode) {
+        gate.parentNode.insertBefore(widget, gate.nextSibling);
+      }
+    }
+  }
+
+  function loadAnalyticsData() {
+    fetch(API_BASE + '/v1/analytics/dashboard?token=' + ANALYTICS_TOKEN)
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        document.getElementById('ng-analytics-loading').style.display = 'none';
+        var d = document.getElementById('ng-analytics-data');
+        if (d) d.style.display = 'block';
+
+        var visitsEl = document.getElementById('ng-stat-visits');
+        if (visitsEl) visitsEl.textContent = data.total_visits ? data.total_visits.toLocaleString() : '0';
+
+        var uniqueEl = document.getElementById('ng-stat-unique');
+        if (uniqueEl) uniqueEl.textContent = data.unique_visitors ? data.unique_visitors.toLocaleString() : '0';
+
+        var signupsEl = document.getElementById('ng-stat-signups');
+        if (signupsEl) signupsEl.textContent = data.all_time && data.all_time.total_signups ? data.all_time.total_signups.toLocaleString() : '0';
+
+        var revEl = document.getElementById('ng-stat-revenue');
+        if (revEl) revEl.textContent = data.all_time && data.all_time.total_paid_revenue ? '$' + data.all_time.total_paid_revenue.toLocaleString() : '$0';
+
+        var pagesEl = document.getElementById('ng-stat-pages');
+        if (pagesEl && data.top_pages && data.top_pages.length) {
+          pagesEl.innerHTML = data.top_pages.slice(0, 5).map(function(p) {
+            return '<div style="display:flex;justify-content:space-between;gap:8px;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;" title="' + p[0] + '">' + p[0] + '</span><strong style="color:#e8e8ec;">' + p[1] + '</strong></div>';
+          }).join('');
+        } else if (pagesEl) {
+          pagesEl.innerHTML = '<span style="color:#4b5563;">No data yet</span>';
+        }
+
+        var refsEl = document.getElementById('ng-stat-refs');
+        if (refsEl && data.top_referrers && data.top_referrers.length) {
+          refsEl.innerHTML = data.top_referrers.slice(0, 5).map(function(r) {
+            return '<div style="display:flex;justify-content:space-between;gap:8px;"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px;" title="' + r[0] + '">' + r[0] + '</span><strong style="color:#e8e8ec;">' + r[1] + '</strong></div>';
+          }).join('');
+        } else if (refsEl) {
+          refsEl.innerHTML = '<span style="color:#4b5563;">No data yet</span>';
+        }
+      })
+      .catch(function() {
+        var loading = document.getElementById('ng-analytics-loading');
+        if (loading) loading.style.display = 'none';
+        var err = document.getElementById('ng-analytics-error');
+        if (err) err.style.display = 'block';
+      });
+  }
+
+  // Hook into showTab to load analytics when Dashboard tab is shown
+  var origShowTab = window.showTab;
+  window.showTab = function(tab) {
+    var result = origShowTab(tab);
+    if (tab === 'dash') {
+      createAnalyticsWidget();
+      setTimeout(loadAnalyticsData, 100);
+    }
+    return result;
+  };
+
+  // If Dashboard tab is already active on load, show widget
+  document.addEventListener('DOMContentLoaded', function() {
+    if (document.getElementById('content-dash') && document.getElementById('content-dash').classList.contains('active')) {
+      createAnalyticsWidget();
+      loadAnalyticsData();
+    }
+  });
+})();
+</script>
 </body>
 </html>
