@@ -1,5 +1,5 @@
 /**
- * NiceGuyAPI v5.4.0 - AI Agent Gateway with Custom Agents & Stripe Live Payments
+ * NiceGuyAPI v5.5.0 - AI Agent Gateway with Custom Agents & Stripe Live Payments + Webhook
  *
  * OpenAI-compatible chat completions via OpenRouter.
  * 23+ AI models. Autonomous Agent with web search, fetch, calculator.
@@ -194,11 +194,55 @@ app.post('/v1/stripe/webhook', express.raw({type:'application/json'}), (req,res)
 
 app.use(express.json({limit:'1mb'})); app.use(cors()); app.use(helmet({contentSecurityPolicy:false}));
 
+// Stripe Webhook — raw body parser for signature verification
+app.post('/v1/stripe/webhook', express.raw({type:'application/json'}), async (req,res) => {
+  if (!stripe || !STRIPE_WEBHOOK_SECRET) return res.status(503).json({error:'Stripe not configured'});
+  const sig = req.headers['stripe-signature'];
+  let event;
+  try { event = stripe.webhooks.constructEvent(req.body, sig, STRIPE_WEBHOOK_SECRET); }
+  catch(e) { console.error('[NG] Webhook sig:', e.message); return res.status(400).json({error:'Webhook signature failed'}); }
+  try {
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object;
+      if (session.mode === 'subscription' && session.metadata && session.metadata.api_key_id) {
+        const db = await loadDb();
+        const keyId = session.metadata.api_key_id;
+        const tier = session.metadata.tier;
+        if (db.keys[keyId] && TIERS[tier]) {
+          db.keys[keyId].tier = tier;
+          db.keys[keyId].monthly_limit = TIERS[tier].monthly_requests;
+          db.keys[keyId].pending_tier = null;
+          if (db.billing[session.id]) db.billing[session.id].status = 'active';
+          await saveDb(db);
+          console.log('[NG] Activated', tier, 'for key', keyId);
+        }
+      }
+    } else if (event.type === 'customer.subscription.deleted') {
+      const sub = event.data.object;
+      const db = await loadDb();
+      for (const billingId of Object.keys(db.billing)) {
+        if (db.billing[billingId].status === 'active') {
+          const keyId = db.billing[billingId].api_key_id;
+          if (db.keys[keyId]) {
+            db.keys[keyId].tier = 'free';
+            db.keys[keyId].monthly_limit = TIERS.free.monthly_requests;
+            db.keys[keyId].pending_tier = null;
+          }
+        }
+      }
+      db.billing[sub.id] = { status:'canceled', canceled_at:new Date().toISOString() };
+      await saveDb(db);
+      console.log('[NG] Subscription canceled, downgraded to free');
+    }
+  } catch(e) { console.error('[NG] Webhook processing:', e.message); }
+  res.json({received:true});
+});
+
 // Health
-app.get('/health', (req,res) => res.status(200).json({ status:'ok', version:'5.4.0', timestamp:new Date().toISOString(), storage:process.env.JSONBLOB_ID?'persistent':'memory-only', agent:true, custom_agents:true, stripe:!!stripe, stripe_mode:STRIPE_SECRET.startsWith('sk_live_')?'live':'test' }));
+app.get('/health', (req,res) => res.status(200).json({ status:'ok', version:'5.5.0', timestamp:new Date().toISOString(), storage:process.env.JSONBLOB_ID?'persistent':'memory-only', agent:true, custom_agents:true, stripe:!!stripe, stripe_mode:STRIPE_SECRET.startsWith('sk_live_')?'live':'test', webhook:!!STRIPE_WEBHOOK_SECRET }));
 
 // Root
-app.get('/', (req,res) => res.json({ name:'NiceGuyAPI', version:'5.4.0', description:'AI Model Gateway + Agent. Custom Agents. Stripe + key management. Live payments enabled.', base_url:'/v1', pricing:{free:'$0/12req/75k',pro:'$6/40req/145k',premium:'$27/250req/315k',platinum:'$55/99999/750k'}, payments:STRIPE_SECRET.startsWith('sk_live_')?'live':'test', auth:'X-API-Key header', endpoints:['GET /health','POST /v1/signup','GET /v1/models','POST /v1/chat/completions','POST /v1/agent','GET /v1/usage','GET /v1/keys','POST /v1/keys','DELETE /v1/keys/:prefix','POST /v1/keys/:prefix/rotate','POST /v1/agent/reset','GET /v1/agents','POST /v1/agents','GET /v1/agents/:id','PUT /v1/agents/:id','DELETE /v1/agents/:id','POST /v1/agents/:id/reset'] }));
+app.get('/', (req,res) => res.json({ name:'NiceGuyAPI', version:'5.5.0', description:'AI Model Gateway + Agent. Custom Agents. Stripe + key management. Live payments enabled.', base_url:'/v1', pricing:{free:'$0/12req/75k',pro:'$6/40req/145k',premium:'$27/250req/315k',platinum:'$55/99999/750k'}, payments:STRIPE_SECRET.startsWith('sk_live_')?'live':'test', auth:'X-API-Key header', endpoints:['GET /health','POST /v1/signup','GET /v1/models','POST /v1/chat/completions','POST /v1/agent','GET /v1/usage','GET /v1/keys','POST /v1/keys','DELETE /v1/keys/:prefix','POST /v1/keys/:prefix/rotate','POST /v1/agent/reset','GET /v1/agents','POST /v1/agents','GET /v1/agents/:id','PUT /v1/agents/:id','DELETE /v1/agents/:id','POST /v1/agents/:id/reset'] }));
 
 // Signup
 app.post('/v1/signup', async (req,res) => {
