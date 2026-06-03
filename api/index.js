@@ -182,26 +182,6 @@ async function runAgent(messages, model, apiKey, agentId, histLimit) {
 // App
 const app = express();
 
-app.post('/v1/stripe/webhook', express.raw({type:'application/json'}), (req,res) => {
-  const sig = req.headers['stripe-signature']; let event;
-  try { event = (STRIPE_WEBHOOK_SECRET&&stripe) ? stripe.webhooks.constructEvent(req.body,sig,STRIPE_WEBHOOK_SECRET) : JSON.parse(req.body); }
-  catch(e) { return res.status(400).json({error:'Webhook failed'}); }
-  if (event.type==='checkout.session.completed') {
-    loadDb().then(db => {
-      const s = event.data.object, b = db.billing[s.id];
-      if (b&&b.status==='pending') {
-        const k = db.keys[b.api_key_id];
-        if (k) {
-          if (s.metadata&&s.metadata.type==='refill') k.monthly_limit += parseInt((s.metadata&&s.metadata.amount)||'10');
-          else if (k.pending_tier) { const t=TIERS[k.pending_tier]; k.tier=k.pending_tier; k.pending_tier=null; k.monthly_limit=t.monthly_requests; }
-          b.status='completed'; b.completed_at=new Date().toISOString(); saveDb(db);
-        }
-      }
-    });
-  }
-  res.json({received:true});
-});
-
 app.use(express.json({limit:'1mb'})); app.use(cors()); app.use(helmet({contentSecurityPolicy:false}));
 
 // Stripe Webhook — raw body parser for signature verification
