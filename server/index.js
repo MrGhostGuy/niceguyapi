@@ -40,11 +40,11 @@ if (process.env.STRIPE_SECRET_KEY) {
 
 const TIERS = {
   free: {
-    name: 'Free',
+    name: 'Hobbyist',
     price: 0,
-    monthly_requests: 14,
+    monthly_requests: 100,
     rate_limit_per_minute: 5,
-    rate_limit_per_day: 10,
+    rate_limit_per_day: 50,
     max_tokens_per_request: 4096,
     allows_games_apps: false,
     allows_image_gen: false,
@@ -53,11 +53,11 @@ const TIERS = {
     period: 'monthly',
   },
   pro: {
-    name: 'Pro',
-    price: 6,
-    monthly_requests: 40,
+    name: 'Builder',
+    price: 9,
+    monthly_requests: 500,
     rate_limit_per_minute: 20,
-    rate_limit_per_day: 200,
+    rate_limit_per_day: 500,
     max_tokens_per_request: 32768,
     allows_games_apps: false,
     allows_image_gen: true,
@@ -65,16 +65,28 @@ const TIERS = {
     cost_per_extra_request: 0.02,
   },
   premium: {
-    name: 'Premium',
-    price: 27,
-    monthly_requests: 500,
+    name: 'Developer',
+    price: 29,
+    monthly_requests: 2500,
     rate_limit_per_minute: 60,
-    rate_limit_per_day: 1000,
+    rate_limit_per_day: 2500,
     max_tokens_per_request: 131072,
     allows_games_apps: true,
     allows_image_gen: true,
     allows_song_gen: true,
     cost_per_extra_request: 0.01,
+  },
+  platinum: {
+    name: 'Studio',
+    price: 79,
+    monthly_requests: 10000,
+    rate_limit_per_minute: 120,
+    rate_limit_per_day: 10000,
+    max_tokens_per_request: 262144,
+    allows_games_apps: true,
+    allows_image_gen: true,
+    allows_song_gen: true,
+    cost_per_extra_request: 0.005,
   },
 };
 
@@ -90,7 +102,7 @@ function scheduleUsageResets() {
   function tryReset() {
     const now = new Date();
     if (now.getUTCDate() === 1 && now.getUTCHours() === 0) {
-      db.prepare("UPDATE api_keys SET monthly_used = 0, billing_period_start = datetime('now') WHERE tier IN ('free', 'pro', 'premium')").run();
+      db.prepare("UPDATE api_keys SET monthly_used = 0, billing_period_start = datetime('now') WHERE tier IN ('free', 'pro', 'premium', 'platinum')").run();
       console.log('[NiceGuyAPI] Monthly usage reset for all tiers');
     }
   }
@@ -470,7 +482,7 @@ app.post('/v1/signup', signupLimiter, async (req, res) => {
     return res.status(400).json({ error: { message: 'Please enter a valid email address.', type: 'validation_error' } });
   }
 
-  const validTiers = ['free', 'pro', 'premium'];
+  const validTiers = ['free', 'pro', 'premium', 'platinum'];
   if (!validTiers.includes(tier)) {
     return res.status(400).json({ error: { message: `tier must be one of: ${validTiers.join(', ')}`, type: 'validation_error' } });
   }
@@ -496,7 +508,7 @@ app.post('/v1/signup', signupLimiter, async (req, res) => {
       prefix: keyPrefix,
       email,
       tier: 'free',
-      tier_name: 'Free',
+      tier_name: 'Hobbyist',
       monthly_limit: tierConfig.monthly_requests,
       payment_required: false,
       created_at: new Date().toISOString(),
