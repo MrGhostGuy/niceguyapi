@@ -236,6 +236,45 @@ app.get('/health', (req,res) => res.status(200).json({ status:'ok', version:'5.6
 // Root
 app.get('/', (req,res) => res.json({ name:'NiceGuyAPI', version:'6.0.0', description:'AI Model Gateway + Agent. Custom Agents. Stripe + key management. Live payments enabled.', base_url:'/v1', pricing:{free:'$0/100req/75k',pro:'$9/500req/145k',premium:'$29/2500req/315k',platinum:'$79/10000req/750k'}, payments:STRIPE_SECRET.startsWith('sk_live_')?'live':'test', auth:'X-API-Key header', endpoints:['GET /health','POST /v1/signup','GET /v1/models','POST /v1/chat/completions','POST /v1/agent','GET /v1/usage','GET /v1/keys','POST /v1/keys','DELETE /v1/keys/:prefix','POST /v1/keys/:prefix/rotate','POST /v1/agent/reset','GET /v1/agents','POST /v1/agents','GET /v1/agents/:id','PUT /v1/agents/:id','DELETE /v1/agents/:id','POST /v1/agents/:id/reset'] }));
 
+// ── TEMPORARY: Create v6 Stripe Prices (remove after running once) ──
+app.post('/v1/admin/create-stripe-prices', async (req, res) => {
+  const ADMIN_SECRET = process.env.ADMIN_SECRET || 'niceguy-dev-secret';
+  if (req.headers['x-admin-secret'] !== ADMIN_SECRET) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  if (!stripe) {
+    return res.status(503).json({ error: 'Stripe not configured' });
+  }
+
+  const tiers = [
+    { key: 'pro', name: 'NiceGuyAPI Builder', description: '500 requests/month + AI Agent with web search & fetch.', price: 900, requests: 500, context: '145K' },
+    { key: 'premium', name: 'NiceGuyAPI Developer', description: '2,500 requests/month + Full Agent + Claude/GPT-4o/Gemini.', price: 2900, requests: 2500, context: '315K' },
+    { key: 'platinum', name: 'NiceGuyAPI Studio', description: '10,000 requests/month + 750K context + priority routing.', price: 7900, requests: 10000, context: '750K' },
+  ];
+
+  const results = [];
+  try {
+    for (const tier of tiers) {
+      const product = await stripe.products.create({
+        name: tier.name,
+        description: tier.description,
+        metadata: { tier_key: tier.key, requests: String(tier.requests), context: tier.context },
+      });
+      const price = await stripe.prices.create({
+        product: product.id,
+        unit_amount: tier.price,
+        currency: 'usd',
+        recurring: { interval: 'month' },
+        metadata: { tier_key: tier.key },
+      });
+      results.push({ tier: tier.key, product_id: product.id, price_id: price.id, amount: tier.price });
+    }
+    return res.json({ success: true, mode: STRIPE_SECRET.startsWith('sk_live_') ? 'live' : 'test', prices: results });
+  } catch (e) {
+    return res.status(500).json({ error: e.message, partial_results: results });
+  }
+});
+
 // ── ANALYTICS TRACKING ──
 // Track page visits (called from landing page JS)
 app.post('/v1/analytics/track', async (req,res) => {
