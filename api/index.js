@@ -31,10 +31,10 @@ if (STRIPE_SECRET) {
 }
 
 const TIERS = {
-  free:     { name:'Free',     price:0,   monthly_requests:12,    rate_limit_per_minute:5,   rate_limit_per_day:10,    max_tokens:75000,   context_size:75000,   agent:false, custom_agent:false },
-  pro:      { name:'Pro',      price:6,   monthly_requests:40,    rate_limit_per_minute:20,  rate_limit_per_day:200,   max_tokens:145000,  context_size:145000,  agent:true,  custom_agent:1 },
-  premium:  { name:'Premium',  price:27,  monthly_requests:250,   rate_limit_per_minute:60,  rate_limit_per_day:1000,  max_tokens:315000,  context_size:315000,  agent:true,  custom_agent:999 },
-  platinum: { name:'Platinum', price:55,  monthly_requests:99999,  rate_limit_per_minute:120, rate_limit_per_day:10000, max_tokens:750000, context_size:750000, agent:true,  custom_agent:999, unlimited:true },
+  free:     { name:'Hobbyist', price:0,   monthly_requests:100,   rate_limit_per_minute:5,   rate_limit_per_day:50,    max_tokens:75000,   context_size:75000,   agent:false, custom_agent:false },
+  pro:      { name:'Builder',  price:9,   monthly_requests:500,   rate_limit_per_minute:20,  rate_limit_per_day:500,   max_tokens:145000,  context_size:145000,  agent:true,  custom_agent:1 },
+  premium:  { name:'Developer', price:29, monthly_requests:2500,  rate_limit_per_minute:60,  rate_limit_per_day:2500,  max_tokens:315000,  context_size:315000,  agent:true,  custom_agent:999 },
+  platinum: { name:'Studio',   price:79,  monthly_requests:10000, rate_limit_per_minute:120, rate_limit_per_day:10000, max_tokens:750000, context_size:750000, agent:true,  custom_agent:999 },
 };
 
 function apiError(res, s, msg, type, extra) { return res.status(s).json({ error: { message: msg, type, ...(extra||{}) } }); }
@@ -234,7 +234,7 @@ app.post('/v1/stripe/webhook', express.raw({type:'application/json'}), async (re
 app.get('/health', (req,res) => res.status(200).json({ status:'ok', version:'5.6.0', timestamp:new Date().toISOString(), storage:process.env.JSONBLOB_ID?'persistent':'memory-only', agent:true, custom_agents:true, stripe:!!stripe, stripe_mode:STRIPE_SECRET.startsWith('sk_live_')?'live':'test', webhook:!!STRIPE_WEBHOOK_SECRET, analytics:true }));
 
 // Root
-app.get('/', (req,res) => res.json({ name:'NiceGuyAPI', version:'5.6.0', description:'AI Model Gateway + Agent. Custom Agents. Stripe + key management. Live payments enabled.', base_url:'/v1', pricing:{free:'$0/12req/75k',pro:'$6/40req/145k',premium:'$27/250req/315k',platinum:'$55/99999/750k'}, payments:STRIPE_SECRET.startsWith('sk_live_')?'live':'test', auth:'X-API-Key header', endpoints:['GET /health','POST /v1/signup','GET /v1/models','POST /v1/chat/completions','POST /v1/agent','GET /v1/usage','GET /v1/keys','POST /v1/keys','DELETE /v1/keys/:prefix','POST /v1/keys/:prefix/rotate','POST /v1/agent/reset','GET /v1/agents','POST /v1/agents','GET /v1/agents/:id','PUT /v1/agents/:id','DELETE /v1/agents/:id','POST /v1/agents/:id/reset'] }));
+app.get('/', (req,res) => res.json({ name:'NiceGuyAPI', version:'6.0.0', description:'AI Model Gateway + Agent. Custom Agents. Stripe + key management. Live payments enabled.', base_url:'/v1', pricing:{free:'$0/100req/75k',pro:'$9/500req/145k',premium:'$29/2500req/315k',platinum:'$79/10000req/750k'}, payments:STRIPE_SECRET.startsWith('sk_live_')?'live':'test', auth:'X-API-Key header', endpoints:['GET /health','POST /v1/signup','GET /v1/models','POST /v1/chat/completions','POST /v1/agent','GET /v1/usage','GET /v1/keys','POST /v1/keys','DELETE /v1/keys/:prefix','POST /v1/keys/:prefix/rotate','POST /v1/agent/reset','GET /v1/agents','POST /v1/agents','GET /v1/agents/:id','PUT /v1/agents/:id','DELETE /v1/agents/:id','POST /v1/agents/:id/reset'] }));
 
 // ── ANALYTICS TRACKING ──
 // Track page visits (called from landing page JS)
