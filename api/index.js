@@ -235,17 +235,6 @@ app.get('/health', (req,res) => res.status(200).json({ status:'ok', version:'5.6
 
 // Root
 app.get('/', (req,res) => res.json({ name:'NiceGuyAPI', version:'6.0.0', description:'AI Model Gateway + Agent. Custom Agents. Stripe + key management. Live payments enabled.', base_url:'/v1', pricing:{free:'$0/100req/75k',pro:'$9/500req/145k',premium:'$29/2500req/315k',platinum:'$79/10000req/750k'}, payments:STRIPE_SECRET.startsWith('sk_live_')?'live':'test', auth:'X-API-Key header', endpoints:['GET /health','POST /v1/signup','GET /v1/models','POST /v1/chat/completions','POST /v1/agent','GET /v1/usage','GET /v1/keys','POST /v1/keys','DELETE /v1/keys/:prefix','POST /v1/keys/:prefix/rotate','POST /v1/agent/reset','GET /v1/agents','POST /v1/agents','GET /v1/agents/:id','PUT /v1/agents/:id','DELETE /v1/agents/:id','POST /v1/agents/:id/reset'] }));
-  if (!stripe) return res.status(503).json({ error: 'Stripe not configured' });
-  const ids = { builder: process.env.STRIPE_PRO_PRICE_ID, developer: process.env.STRIPE_PREMIUM_PRICE_ID, studio: process.env.STRIPE_PLATINUM_PRICE_ID };
-  const r = {};
-  for (const [n, id] of Object.entries(ids)) {
-    if (!id) { r[n] = { error: 'not set' }; continue; }
-    const p = await stripe.prices.retrieve(id);
-    const prod = await stripe.products.retrieve(p.product);
-    r[n] = { price: p.id, product: prod.name, amount: p.unit_amount, currency: p.currency, interval: p.recurring?.interval, mode: STRIPE_SECRET.startsWith('sk_live_') ? 'LIVE' : 'TEST' };
-  }
-  res.json({ ok: true, results: r });
-});
 
 // ── ANALYTICS TRACKING ──
 // Track page visits (called from landing page JS)
